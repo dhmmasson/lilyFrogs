@@ -102,16 +102,43 @@ function displayMenu() {
 
 /** */
 function startGame() {
+  console.log("Start Game");
+  Game.board.sites = Array(10)
+    .fill({ x: 0, y: 0 })
+    .map((site, index) => {
+      return {
+        x: constrain((noise(0, index) - 0.5) * 2 + 0.5, 0.1, 0.9),
+        y: constrain((noise(1, index) - 0.5) * 2 + 0.5, 0.1, 0.9),
+      };
+    });
+
   Game.state = GameStates.playing;
+}
+
+function drawGame() {
+  if (Game.state !== GameStates.playing) {
+    return false;
+  }
+  fill(255);
+  Game.board.sites.forEach((site) => {
+    ellipse(
+      site.x * Game.board.size.width,
+      site.y * Game.board.size.height,
+      10
+    );
+  });
 }
 
 function setup() {
   // Create canvas and put it in the canvas div to guess the size
   createCanvas(Game.board.size.width, Game.board.size.height).parent("#canvas");
   windowResized();
+
+  startGame();
 }
 
 function draw() {
-  background(10);
+  background(100);
   displayMenu();
+  drawGame();
 }
