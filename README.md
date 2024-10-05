@@ -2,6 +2,8 @@
 
 ![Ludum Dare](https://img.shields.io/badge/LudumDare-56-f79122?labelColor=ee5533&link=https%3A%2F%2Fldjam.com%2Fevents%2Fludum-dare%2F56)
 ![p5js](https://img.shields.io/badge/p5.js-v1.9.4-ED225D?logo=p5.js&logoColor=FFFFFF)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13893396.svg)](https://doi.org/10.5281/zenodo.13893396)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 My entry for ludum dare 56
 

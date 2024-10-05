@@ -11,7 +11,11 @@ authors:
     email: dhm.masson@gmail.com
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.13891984
+    value: 10.5281/zenodo.13893397
+    description: 'doi of this version'
+  - type: doi
+    value: 10.5281/zenodo.13893396
+    description: 'doi of all versions'
 repository-code: 'https://github.com/dhmmasson/LD56'
 url: 'https://dhmmasson.github.io/LD56/'
 abstract: >-
@@ -22,5 +26,5 @@ keywords:
   - Web
   - Javascript
 license: MIT
-version: v0.0.1
+version: v0.1.0
 date-released: '2024-10-06'
