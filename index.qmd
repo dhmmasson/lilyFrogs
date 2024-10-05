@@ -5,9 +5,9 @@ include-before-body:
     <script src="libraries/rhill-voronoi-core.js" type="text/javascript"></script>
     <script src="libraries/p5/p5.min.js" type="text/javascript"></script>
     <script src="libraries/p5/p5.sound.min.js" type="text/javascript"></script>
+    <script src="libraries/p5.touchgui.js" type="text/javascript"></script>
     <script src="src/sketch.js"></script>
 ---
-    
 :::{#canvas}
 
 :::
