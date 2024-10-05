@@ -1,3 +1,16 @@
+colors = {
+  "Midnight green": "#005f73",
+  "Dark cyan": "#0a9396",
+  Mint: "#61bd9e",
+  Vanilla: "#e9d8a6",
+  Gamboge: "#e99700",
+  "Cocoa Brown": "#de7002",
+  Tawny: "#cb5f12",
+  "Engineering orange": "#b92113",
+  "Penn red": "#9d1b12",
+  "Falu red": "#7a1815",
+};
+
 /** Levels */
 const voronoi = new Voronoi();
 const Levels = {
@@ -96,14 +109,52 @@ function displayMenu() {
     Game.currentMenu = Game.nextMenu;
   }
 
-  background(220);
+  background(colors["Dark cyan"]);
   drawGui();
 
   // Check if buttons are pressed
   checkButtons();
 }
 
-dhmdist = (p1, p2) => dist(p1.x, p1.y, p2.x, p2.y);
+const dhmdist = (p1, p2) => dist(p1.x, p1.y, p2.x, p2.y);
+
+/**
+ * @typedef {Object} Quad
+ * @property {Voronoi.Cell} cell - The Voronoi cell associated with the quad.
+ * @property {[Voronoi.Edge, Voronoi.Edge, Voronoi.Edge, Voronoi.Edge]} edges - The four edges that form the quad.
+ * @property {number} id - The unique identifier for the quad.
+ * @property {[Quad, Quad, Quad, Quad]} neighbours - The four neighboring quads.
+ * @property {Voronoi.Vertex} site - The Voronoi vertex (site) associated with the quad.
+ * @property {[Voronoi.Vertex, Voronoi.Vertex, Voronoi.Vertex, Voronoi.Vertex]} vertices - The four vertices of the quad.
+ */
+
+/**
+ *
+ * @param {Voronoi.Vertex} point
+ * @param {Quad} quad
+ * @returns
+ */
+function isPointInQuad(point, quad) {
+  const vertices = quad.vertices.map((v) => {
+    return { x: v.x * Game.board.size.width, y: v.y * Game.board.size.height };
+  });
+
+  let totalAngle = 0;
+
+  // Loop through each pair of consecutive vertices (forming vectors to the point)
+  for (let i = 0; i < vertices.length; i++) {
+    const v1 = createVector(vertices[i].x - point.x, vertices[i].y - point.y);
+    const v2 = createVector(
+      vertices[(i + 1) % vertices.length].x - point.x,
+      vertices[(i + 1) % vertices.length].y - point.y
+    );
+    const angle = v1.angleBetween(v2);
+    totalAngle += angle;
+  }
+
+  // The point is inside if the total angle is approximately 2π
+  return Math.abs(totalAngle) > Math.PI;
+}
 
 function computeCentroid(cell) {
   cell.centroid = { x: 0, y: 0 };
@@ -131,48 +182,141 @@ function generateDiagram() {
 }
 
 function subdivide(diagram) {
-  quads = [];
+  let quads = [];
   const edges = [];
-  const vertices = [];
+  const vertices = diagram.vertices.slice() || [];
+
+  for (const edge of diagram.edges) {
+    va = edge.va;
+    vb = edge.vb;
+    let middle = new Voronoi.prototype.Vertex(
+      (va.x + vb.x) / 2,
+      (va.y + vb.y) / 2
+    );
+    vertices.push(middle);
+    edge.middlePoint = middle;
+
+    // First half of the perimeter
+    let edgeFirstHalf = new Voronoi.prototype.Edge(edge.lSite, edge.rSite);
+    edgeFirstHalf.va = va;
+    edgeFirstHalf.vb = middle;
+    edges.push(edgeFirstHalf);
+    // Second half of the perimeter
+    let edgeSecondHalf = new Voronoi.prototype.Edge(edge.rSite, edge.lSite);
+    edgeSecondHalf.va = middle;
+    edgeSecondHalf.vb = vb;
+    edges.push(edgeSecondHalf);
+
+    edge.daughters = [edgeFirstHalf, edgeSecondHalf];
+
+    // From the center of the cell to the middle of the edge
+    let edgeMiddleLeft = new Voronoi.prototype.Edge(edge.lSite, edge.lSite);
+    edgeMiddleLeft.va = edge.lSite;
+    edgeMiddleLeft.vb = middle;
+    edges.push(edgeMiddleLeft);
+    edge.middleEdges = [edgeMiddleLeft];
+
+    //if there is a right site
+    if (edge.rSite) {
+      let edgeMiddleRight = new Voronoi.prototype.Edge(edge.rSite, edge.rSite);
+      edgeMiddleRight.va = edge.rSite;
+      edgeMiddleRight.vb = middle;
+      edges.push(edgeMiddleRight);
+      edge.middleEdges.push(edgeMiddleRight);
+    }
+  }
+  edges.forEach((edge) => {
+    edge.quad = [];
+  });
+
   for (const cell of diagram.cells) {
     vertices.push(cell.site);
     let cellVertices = [];
+    let cellEdges = [];
     let va, vb;
+    //split the edges
+
+    let perimterEdges = [];
+    let insideEdges = [];
+
+    // Generate the quads
+
     for (const halfedge of cell.halfedges) {
       va = halfedge.getStartpoint();
       vb = halfedge.getEndpoint();
-      let middle = new Voronoi.prototype.Vertex(
-        (va.x + vb.x) / 2,
-        (va.y + vb.y) / 2
-      );
+      middle = halfedge.edge.middlePoint;
+      if (halfedge.site === halfedge.edge.lSite) {
+        perimterEdges.push(halfedge.edge.daughters[0]);
+        perimterEdges.push(halfedge.edge.daughters[1]);
+      } else {
+        perimterEdges.push(halfedge.edge.daughters[1]);
+        perimterEdges.push(halfedge.edge.daughters[0]);
+      }
+
+      if (halfedge.edge.lSite === cell.site) {
+        insideEdges.push(halfedge.edge.middleEdges[0]);
+        insideEdges.push(halfedge.edge.middleEdges[0]);
+      } else {
+        insideEdges.push(halfedge.edge.middleEdges[1]);
+        insideEdges.push(halfedge.edge.middleEdges[1]);
+      }
 
       cellVertices.push(va);
       cellVertices.push(middle);
-
-      vertices.push(va);
-      vertices.push(middle);
     }
     // Add the last vertex // same as tht first
-    cellVertices.push(vb);
-    cellVertices.shift();
+    cellVertices.push(cellVertices.shift());
+    perimterEdges.push(perimterEdges.shift());
+    insideEdges.push(insideEdges.shift());
     // duplicate the first middle
     cellVertices.push(cellVertices[0]);
 
     while (cellVertices.length > 1) {
+      let vertices = [
+        cell.site, // center
+        cellVertices.shift(), //middle
+        cellVertices.shift(), //corner
+        cellVertices[0], // next middle (keep for next quad)
+      ];
       let quad = {
-        vertex: [
-          cell.site, // center
-          cellVertices.shift(), //middle
-          cellVertices.shift(), //corner
-          cellVertices[0], // next middle (keep for next quad)
+        site: vertices.reduce(
+          (acc, v) => {
+            acc.x += v.x / 4;
+            acc.y += v.y / 4;
+            return acc;
+          },
+          { x: 0, y: 0 }
+        ),
+        edges: [
+          insideEdges.shift(),
+          perimterEdges.shift(),
+          perimterEdges.shift(),
+          insideEdges.shift(),
         ],
+        vertices,
         cell,
       };
+
+      // Register the quad to the edge
+      quad.edges.forEach((edge) => {
+        edge.quad.push(quad);
+      });
 
       quads.push(quad);
     }
   }
+
+  // Define the neighbour by looking at the edges
+  quads.forEach((quad, i) => {
+    quad.id = i;
+    quad.neighbours = quad.edges.map((edge) => {
+      return edge.quad.filter((q) => q !== quad)[0];
+    });
+  });
+
   diagram.quads = quads;
+  diagram.dhmEdges = edges;
+  console.log(vertices);
   return diagram;
 }
 
@@ -213,26 +357,13 @@ function startGame() {
 
 function drawDiagram() {
   if (Game.board.diagram) {
-    stroke(0);
-    strokeWeight(1);
-    Game.board.diagram.cells.forEach((cell) => {
-      fill(200);
-      beginShape();
-      cell.halfedges.forEach((halfedge) => {
-        const v = halfedge.getStartpoint();
-        vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
-      });
-      endShape(CLOSE);
-    });
-
     // Draw the quads
-    stroke(255, 0, 0);
+    stroke(colors["Midnight green"]);
     strokeWeight(1);
     noFill();
-
     Game.board.diagram.quads.forEach((quad) => {
       beginShape();
-      quad.vertex.forEach((v) => {
+      quad.vertices.forEach((v) => {
         vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
       });
       endShape(CLOSE);
@@ -256,7 +387,72 @@ function setup() {
 }
 
 function draw() {
-  background(100);
+  background(colors["Dark cyan"]);
   displayMenu();
   drawGame();
+
+  // Draw the mouse
+  fill(0);
+  ellipse(mouseX, mouseY, 5, 5);
+  // find the quad
+  if (Game.board.diagram) {
+    let quad = Game.board.diagram.quads.find((quad) => {
+      return isPointInQuad({ x: mouseX, y: mouseY }, quad);
+    });
+    if (quad) {
+      drawQuad(quad, color(colors.Vanilla));
+      quad.traversed = true;
+      followQuad(quad, 0, color(colors.Gamboge));
+      followQuad(quad, 2, color(colors.Gamboge));
+
+      followQuad(quad, 1, color(colors.Mint));
+      followQuad(quad, 3, color(colors.Mint));
+    }
+
+    // Draw the connected quads
+  }
+
+  // draw the voronoi
+  stroke(colors["Midnight green"]);
+  strokeWeight(2);
+  noFill();
+  Game.board.diagram.cells.forEach((cell) => {
+    beginShape();
+    cell.halfedges.forEach((halfedge) => {
+      let v = halfedge.getStartpoint();
+      vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
+    });
+    endShape(CLOSE);
+  });
+
+  // untraverse the quads
+  Game.board.diagram.quads.forEach((quad) => {
+    quad.traversed = false;
+  });
+}
+
+function drawQuad(quad, color) {
+  stroke(0);
+  strokeWeight(1);
+  fill(color);
+  beginShape();
+  quad.vertices.forEach((v) => {
+    vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
+  });
+  endShape(CLOSE);
+}
+
+function followQuad(quad, direction, color) {
+  let nextQuad = quad.neighbours[direction];
+  if (!nextQuad) {
+    return false;
+  }
+  let nextDirection = //find in the nextQuad where we come from
+    (nextQuad.neighbours.findIndex((neighbour) => neighbour === quad) + 2) % 4;
+
+  if (nextQuad && !nextQuad.traversed) {
+    drawQuad(nextQuad, color);
+    nextQuad.traversed = true;
+    followQuad(nextQuad, nextDirection, color);
+  }
 }
