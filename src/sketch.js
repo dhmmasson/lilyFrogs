@@ -103,6 +103,47 @@ function displayMenu() {
   checkButtons();
 }
 
+dhmdist = (p1, p2) => dist(p1.x, p1.y, p2.x, p2.y);
+
+function computeCentroid(cell) {
+  cell.centroid = { x: 0, y: 0 };
+  cell.halfedges.forEach((halfedge) => {
+    const v = halfedge.getStartpoint();
+    cell.centroid.x += v.x;
+    cell.centroid.y += v.y;
+  });
+  cell.centroid.x /= cell.halfedges.length;
+  cell.centroid.y /= cell.halfedges.length;
+
+  return dhmdist(cell.centroid, cell.site);
+}
+function computeCentroids() {
+  return Game.board.diagram.cells.reduce(
+    (totalDistance, cell) => totalDistance + computeCentroid(cell),
+    0
+  );
+}
+
+function generateDiagram() {
+  let temp = 10;
+  let maxIterations = 100;
+  let diagram = null;
+  // Relax the diagram
+  while (temp > 0.01 && maxIterations-- > 0) {
+    voronoi.recycle(Game.board.diagram);
+    diagram = Game.board.diagram = voronoi.compute(Game.board.sites, {
+      xl: 0,
+      xr: 1,
+      yt: 0,
+      yb: 1,
+    });
+    temp = computeCentroids();
+    Game.board.sites = diagram.cells.map((cell) => {
+      return cell.centroid;
+    });
+  }
+  return diagram;
+}
 /** */
 function startGame() {
   console.log("Start Game");
@@ -115,29 +156,30 @@ function startGame() {
       };
     });
 
-  Game.board.diagram = voronoi.compute(Game.board.sites, {
-    xl: 0,
-    xr: 1,
-    yt: 0,
-    yb: 1,
-  });
-
-  console.log(Game.board.diagram);
+  let diagram = generateDiagram();
+  console.log(diagram);
   Game.state = GameStates.playing;
 }
 
 function drawDiagram() {
   if (Game.board.diagram) {
-    fill(200);
     stroke(0);
     strokeWeight(1);
     Game.board.diagram.cells.forEach((cell) => {
+      fill(200);
       beginShape();
       cell.halfedges.forEach((halfedge) => {
         const v = halfedge.getStartpoint();
         vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
       });
       endShape(CLOSE);
+      // Draw centroid
+      fill(0);
+      ellipse(
+        cell.centroid.x * Game.board.size.width,
+        cell.centroid.y * Game.board.size.height,
+        5
+      );
     });
   }
 }
