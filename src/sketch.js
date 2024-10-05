@@ -131,48 +131,136 @@ function generateDiagram() {
 }
 
 function subdivide(diagram) {
-  quads = [];
+  let quads = [];
   const edges = [];
-  const vertices = [];
+  const vertices = diagram.vertices.slice() || [];
+
+  for (const edge of diagram.edges) {
+    va = edge.va;
+    vb = edge.vb;
+    let middle = new Voronoi.prototype.Vertex(
+      (va.x + vb.x) / 2,
+      (va.y + vb.y) / 2
+    );
+    vertices.push(middle);
+    edge.middlePoint = middle;
+
+    // First half of the perimeter
+    let edgeFirstHalf = new Voronoi.prototype.Edge(edge.lSite, edge.rSite);
+    edgeFirstHalf.va = va;
+    edgeFirstHalf.vb = middle;
+    edges.push(edgeFirstHalf);
+    // Second half of the perimeter
+    let edgeSecondHalf = new Voronoi.prototype.Edge(edge.rSite, edge.lSite);
+    edgeSecondHalf.va = middle;
+    edgeSecondHalf.vb = vb;
+    edges.push(edgeSecondHalf);
+
+    edge.daughters = [edgeFirstHalf, edgeSecondHalf];
+
+    // From the center of the cell to the middle of the edge
+    let edgeMiddleLeft = new Voronoi.prototype.Edge(edge.lSite, edge.lSite);
+    edgeMiddleLeft.va = edge.lSite;
+    edgeMiddleLeft.vb = middle;
+    edges.push(edgeMiddleLeft);
+    edge.middleEdges = [edgeMiddleLeft];
+
+    //if there is a right site
+    if (edge.rSite) {
+      let edgeMiddleRight = new Voronoi.prototype.Edge(edge.rSite, edge.rSite);
+      edgeMiddleRight.va = edge.rSite;
+      edgeMiddleRight.vb = middle;
+      edges.push(edgeMiddleRight);
+      edge.middleEdges.push(edgeMiddleRight);
+    }
+  }
+  edges.forEach((edge) => {
+    edge.quad = [];
+  });
+
   for (const cell of diagram.cells) {
     vertices.push(cell.site);
     let cellVertices = [];
+    let cellEdges = [];
     let va, vb;
+    //split the edges
+
+    let perimterEdges = [];
+    let insideEdges = [];
+
+    // Generate the quads
+
     for (const halfedge of cell.halfedges) {
       va = halfedge.getStartpoint();
       vb = halfedge.getEndpoint();
-      let middle = new Voronoi.prototype.Vertex(
-        (va.x + vb.x) / 2,
-        (va.y + vb.y) / 2
-      );
+      middle = halfedge.edge.middlePoint;
+      perimterEdges.push(halfedge.edge.daughters[0]);
+      perimterEdges.push(halfedge.edge.daughters[1]);
+
+      if (halfedge.edge.lSite === cell.site) {
+        insideEdges.push(halfedge.edge.middleEdges[0]);
+        insideEdges.push(halfedge.edge.middleEdges[0]);
+      } else {
+        insideEdges.push(halfedge.edge.middleEdges[1]);
+        insideEdges.push(halfedge.edge.middleEdges[1]);
+      }
 
       cellVertices.push(va);
       cellVertices.push(middle);
-
-      vertices.push(va);
-      vertices.push(middle);
     }
     // Add the last vertex // same as tht first
-    cellVertices.push(vb);
-    cellVertices.shift();
+    cellVertices.push(cellVertices.shift());
+    perimterEdges.push(perimterEdges.shift());
+    insideEdges.push(insideEdges.shift());
     // duplicate the first middle
     cellVertices.push(cellVertices[0]);
 
     while (cellVertices.length > 1) {
+      let vertices = [
+        cell.site, // center
+        cellVertices.shift(), //middle
+        cellVertices.shift(), //corner
+        cellVertices[0], // next middle (keep for next quad)
+      ];
       let quad = {
-        vertex: [
-          cell.site, // center
-          cellVertices.shift(), //middle
-          cellVertices.shift(), //corner
-          cellVertices[0], // next middle (keep for next quad)
+        site: vertices.reduce(
+          (acc, v) => {
+            acc.x += v.x / 4;
+            acc.y += v.y / 4;
+            return acc;
+          },
+          { x: 0, y: 0 }
+        ),
+        edges: [
+          insideEdges.shift(),
+          perimterEdges.shift(),
+          perimterEdges.shift(),
+          insideEdges.shift(),
         ],
+        vertices,
         cell,
       };
+
+      // Register the quad to the edge
+      quad.edges.forEach((edge) => {
+        edge.quad.push(quad);
+      });
 
       quads.push(quad);
     }
   }
+
+  // Define the neighbour by looking at the edges
+  quads.forEach((quad, i) => {
+    quad.id = i;
+    quad.neighbours = quad.edges.map((edge) => {
+      return edge.quad.filter((q) => q !== quad)[0];
+    });
+  });
+
   diagram.quads = quads;
+  diagram.dhmEdges = edges;
+  console.log(vertices);
   return diagram;
 }
 
@@ -232,10 +320,20 @@ function drawDiagram() {
 
     Game.board.diagram.quads.forEach((quad) => {
       beginShape();
-      quad.vertex.forEach((v) => {
+      quad.vertices.forEach((v) => {
         vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
       });
       endShape(CLOSE);
+    });
+
+    // Draw the edges
+    Game.board.diagram.dhmEdges.forEach((edge) => {
+      line(
+        edge.va.x * Game.board.size.width,
+        edge.va.y * Game.board.size.height,
+        edge.vb.x * Game.board.size.width,
+        edge.vb.y * Game.board.size.height
+      );
     });
   }
 }
