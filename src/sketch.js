@@ -1,3 +1,15 @@
+colors = {
+  "Midnight green": "#005f73",
+  "Dark cyan": "#0a9396",
+  Mint: "#61bd9e",
+  Vanilla: "#e9d8a6",
+  Gamboge: "#e99700",
+  "Cocoa Brown": "#de7002",
+  Tawny: "#cb5f12",
+  "Engineering orange": "#b92113",
+  "Penn red": "#9d1b12",
+  "Falu red": "#7a1815",
+};
 /** Levels */
 const voronoi = new Voronoi();
 const Levels = {
@@ -96,7 +108,7 @@ function displayMenu() {
     Game.currentMenu = Game.nextMenu;
   }
 
-  background(220);
+  background(colors["Dark cyan"]);
   drawGui();
 
   // Check if buttons are pressed
@@ -314,7 +326,7 @@ function drawDiagram() {
     });
 
     // Draw the quads
-    stroke(255, 0, 0);
+    stroke(colors["Midnight green"]);
     strokeWeight(1);
     noFill();
 
@@ -354,7 +366,7 @@ function setup() {
 }
 
 function draw() {
-  background(100);
+  background(colors["Dark cyan"]);
   displayMenu();
   drawGame();
 }
