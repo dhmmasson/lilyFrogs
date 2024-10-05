@@ -3,11 +3,19 @@ project:
 
 website:
   title: "LD56"
-  navbar:
-    left:
-      - href: index.qmd
-        text: Home
+  site-url: "https://dhmmasson.github.io/LD56"
+  sidebar:
+    style: docked
+    alignment: right
+    search: false
+    contents:
+      - text: Home
+        href:  "https://dhmmasson.github.io/"
       - about.qmd
+    tools: 
+      - icon: github
+        href: https://github.com/dhmmasson
+  
 
 format:
   html:
