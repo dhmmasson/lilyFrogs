@@ -1,4 +1,5 @@
 /** Levels */
+const voronoi = new Voronoi();
 const Levels = {
   tutorial: {
     level: 0,
@@ -31,6 +32,8 @@ const Game = {
       width: 100,
       height: 100,
     },
+    sites: [], // Voronoi
+    diagram: null,
   },
   menus: {
     main: mainMenuStruct,
@@ -112,14 +115,39 @@ function startGame() {
       };
     });
 
+  Game.board.diagram = voronoi.compute(Game.board.sites, {
+    xl: 0,
+    xr: 1,
+    yt: 0,
+    yb: 1,
+  });
+
+  console.log(Game.board.diagram);
   Game.state = GameStates.playing;
+}
+
+function drawDiagram() {
+  if (Game.board.diagram) {
+    fill(200);
+    stroke(0);
+    strokeWeight(1);
+    Game.board.diagram.cells.forEach((cell) => {
+      beginShape();
+      cell.halfedges.forEach((halfedge) => {
+        const v = halfedge.getStartpoint();
+        vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
+      });
+      endShape(CLOSE);
+    });
+  }
 }
 
 function drawGame() {
   if (Game.state !== GameStates.playing) {
     return false;
   }
-  fill(255);
+  drawDiagram();
+  fill(25);
   Game.board.sites.forEach((site) => {
     ellipse(
       site.x * Game.board.size.width,
