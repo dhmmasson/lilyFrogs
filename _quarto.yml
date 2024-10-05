@@ -3,11 +3,14 @@ project:
 
 website:
   title: "LD56"
+  site-url: "https://dhmmasson.github.io/LD56"
   navbar:
     left:
-      - href: index.qmd
+      - href:  "https://dhmmasson.github.io/"
         text: Home
       - about.qmd
+      - icon: github
+        href: https://github.com/dhmmasson
 
 format:
   html:
