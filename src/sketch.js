@@ -123,12 +123,61 @@ function computeCentroids() {
     0
   );
 }
-
 function generateDiagram() {
-  let temp = 10;
-  let maxIterations = 100;
   let diagram = null;
-  // Relax the diagram
+  diagram = relaxDiagram(null, 100);
+  diagram = subdivide(diagram);
+  return diagram;
+}
+
+function subdivide(diagram) {
+  quads = [];
+  const edges = [];
+  const vertices = [];
+  for (const cell of diagram.cells) {
+    vertices.push(cell.site);
+    let cellVertices = [];
+    let va, vb;
+    for (const halfedge of cell.halfedges) {
+      va = halfedge.getStartpoint();
+      vb = halfedge.getEndpoint();
+      let middle = new Voronoi.prototype.Vertex(
+        (va.x + vb.x) / 2,
+        (va.y + vb.y) / 2
+      );
+
+      cellVertices.push(va);
+      cellVertices.push(middle);
+
+      vertices.push(va);
+      vertices.push(middle);
+    }
+    // Add the last vertex // same as tht first
+    cellVertices.push(vb);
+    cellVertices.shift();
+    // duplicate the first middle
+    cellVertices.push(cellVertices[0]);
+
+    while (cellVertices.length > 1) {
+      let quad = {
+        vertex: [
+          cell.site, // center
+          cellVertices.shift(), //middle
+          cellVertices.shift(), //corner
+          cellVertices[0], // next middle (keep for next quad)
+        ],
+        cell,
+      };
+
+      quads.push(quad);
+    }
+  }
+  diagram.quads = quads;
+  return diagram;
+}
+
+function relaxDiagram(diagram, maxIterations) {
+  let temp = 10;
   while (temp > 0.01 && maxIterations-- > 0) {
     voronoi.recycle(Game.board.diagram);
     diagram = Game.board.diagram = voronoi.compute(Game.board.sites, {
@@ -144,10 +193,11 @@ function generateDiagram() {
   }
   return diagram;
 }
+
 /** */
 function startGame() {
   console.log("Start Game");
-  Game.board.sites = Array(10)
+  Game.board.sites = Array(50)
     .fill({ x: 0, y: 0 })
     .map((site, index) => {
       return {
@@ -173,13 +223,19 @@ function drawDiagram() {
         vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
       });
       endShape(CLOSE);
-      // Draw centroid
-      fill(0);
-      ellipse(
-        cell.centroid.x * Game.board.size.width,
-        cell.centroid.y * Game.board.size.height,
-        5
-      );
+    });
+
+    // Draw the quads
+    stroke(255, 0, 0);
+    strokeWeight(1);
+    noFill();
+
+    Game.board.diagram.quads.forEach((quad) => {
+      beginShape();
+      quad.vertex.forEach((v) => {
+        vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
+      });
+      endShape(CLOSE);
     });
   }
 }
@@ -189,14 +245,6 @@ function drawGame() {
     return false;
   }
   drawDiagram();
-  fill(25);
-  Game.board.sites.forEach((site) => {
-    ellipse(
-      site.x * Game.board.size.width,
-      site.y * Game.board.size.height,
-      10
-    );
-  });
 }
 
 function setup() {
