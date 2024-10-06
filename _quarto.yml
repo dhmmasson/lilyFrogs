@@ -12,19 +12,19 @@ project:
 website:
   title: "LD56"
   site-url: "https://dhmmasson.github.io/LD56"
-  sidebar:
-    style: docked
-    alignment: right
-    search: false
-    contents:
-      - text: "Play"
-        href: index.qmd
-      - about.qmd
-      - text: "@dhmmasson"
-        href: "https://dhmmasson.github.io/"
-    tools:
-      - icon: github
-        href: https://github.com/dhmmasson
+  # sidebar:
+  #   style: docked
+  #   alignment: right
+  #   search: false
+  #   contents:
+  #     - text: "Play"
+  #       href: index.qmd
+  #     - about.qmd
+  #     - text: "@dhmmasson"
+  #       href: "https://dhmmasson.github.io/"
+  #   tools:
+  #     - icon: github
+  #       href: https://github.com/dhmmasson
 
 format:
   html:
@@ -35,3 +35,4 @@ format:
     toc: false
     fontsize: 1.1em
     linestretch: 1.7
+    page-layout: full
