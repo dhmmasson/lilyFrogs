@@ -10,7 +10,7 @@ include-before-body:
     <script src="src/ui.js"></script>
     <script src="src/diagram.js"></script>
     <script src="src/frogs.js"></script>
-    <script src="src/sketch.js"></script>
+    <script src="src/game.js"></script>
 ---
 :::{#canvas}
 

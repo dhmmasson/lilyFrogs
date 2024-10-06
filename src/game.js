@@ -40,6 +40,7 @@ const Game = {
   },
   currentMenu: "",
   nextMenu: "main",
+  players: [],
 };
 
 /** */
@@ -67,24 +68,26 @@ function startGame() {
     {
       color: colors["Persian pink"],
       frog: Game.assets.frog_pink,
-      frogs: [
-        {
-          quad: diagram.quads[10],
-          direction: 0,
-        },
-      ],
+      frogs: [],
     },
     {
       color: colors["Pale azure"],
       frog: Game.assets.frog_blue,
-      frogs: [
-        {
-          quad: diagram.quads[20],
-          direction: 2,
-        },
-      ],
+      frogs: [],
     },
   ];
+  Game.players.forEach((player) => {
+    player.frogs = Array(3)
+      .fill(0)
+      .map((e, index) => {
+        // Get a random not remove quad, not occupied by a frog
+        quad = random(
+          diagram.quads.filter((quad) => !quad.removed && !quad.occupied)
+        );
+        quad.occupied = true;
+        return new Frog(player, quad);
+      });
+  });
 }
 
 function draw() {
