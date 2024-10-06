@@ -24,7 +24,7 @@ function drawDiagram() {
 
 function followQuad(quad, direction, color) {
   let nextQuad = quad.neighbours[direction];
-  if (!nextQuad || nextQuad.removed) {
+  if (!nextQuad || nextQuad.removed || nextQuad.occupied) {
     return false;
   }
   let nextDirection = //find in the nextQuad where we come from
