@@ -144,9 +144,9 @@ function drawGame() {
   fill(Game.players[Game.currentPlayer].color);
   textAlign(CENTER, TOP);
   rectMode(RADIUS);
-  rect(Game.width / 2, 30, 100, 20);
+  rect(Game.width / 2, 20, 100, 10);
   fill(0);
-  text("Player " + Game.currentPlayer, Game.width / 2, 30);
+  text("Player " + Game.currentPlayer, Game.width / 2, 10);
 }
 
 function setup() {
@@ -159,7 +159,7 @@ function setup() {
 
 function mouseClicked() {
   if (Game.state !== GameStates.playing) return;
-
+  const diagram = Game.board.diagram;
   if (getAudioContext().state !== "running") {
     console.log("Starting Audio");
     userStartAudio();
@@ -172,23 +172,40 @@ function mouseClicked() {
     if (Game.currentFrog) Game.currentFrog.selected = false;
     Game.currentFrog = frog;
     frog.selected = true;
+    //Valid moves
+    let quads = getValidMoves(frog);
+    diagram.quads.forEach((quad) => {
+      quad.valid = false;
+    });
+    quads.forEach((quad) => {
+      quad.valid = true;
+    });
   } else if (frog && frog.selected) {
     frog.selected = false;
     Game.currentFrog = null;
+    diagram.quads.forEach((quad) => {
+      quad.valid = false;
+    });
   } else {
     if (Game.currentFrog) {
-      random(Game.whao).play();
-      frog = Game.currentFrog;
-      // Remove the quad under the frog
-      frog.quad.removed = true;
-      player = Game.players[Game.currentPlayer];
-      player.score += frog.quad.points || 0;
-      // Move the Frog to the quad
-      frog.quad = quad;
-      Game.currentFrog = null;
-      frog.selected = false;
-      // Change the player
-      Game.currentPlayer = (Game.currentPlayer + 1) % Game.players.length;
+      let quads = getValidMoves(Game.currentFrog);
+      if (quads.includes(quad)) {
+        random(Game.whao).play();
+        frog = Game.currentFrog;
+        // Remove the quad under the frog
+        frog.quad.removed = true;
+        player = Game.players[Game.currentPlayer];
+        player.score += frog.quad.points || 0;
+        // Move the Frog to the quad
+        frog.quad = quad;
+        Game.currentFrog = null;
+        frog.selected = false;
+        // Change the player
+        Game.currentPlayer = (Game.currentPlayer + 1) % Game.players.length;
+        diagram.quads.forEach((quad) => {
+          quad.valid = false;
+        });
+      }
     }
   }
 }
@@ -208,6 +225,54 @@ function getFrog() {
   } else {
     return null;
   }
+}
+
+function getValidMoves(frog) {
+  let diagram = Game.board.diagram;
+  cleanBoard();
+  let validMoves = [];
+  followQuad(frog.quad, 0);
+  followQuad(frog.quad, 2);
+  diagram.quads.forEach((quad) => {
+    if (quad.traversed) {
+      validMoves.push(quad);
+    }
+  });
+  cleanBoard();
+  followQuad(frog.quad, 1);
+  followQuad(frog.quad, 3);
+  diagram.quads.forEach((quad) => {
+    if (quad.traversed) {
+      validMoves.push(quad);
+    }
+  });
+  cleanBoard();
+  return validMoves;
+}
+
+function isValidMove(frog, quad) {
+  let diagram = Game.board.diagram;
+  diagram.quads.forEach((quad) => {
+    quad.visited = false;
+  });
+  // Check one direction
+  let valid = false;
+  followQuad(frog.quad, 0);
+  followQuad(frog.quad, 2);
+  valid = quad.visited;
+  // Because both direction can intersect on that board.
+  diagram.quads.forEach((quad) => {
+    quad.valid = true;
+    quad.visited = false;
+  });
+  followQuad(frog.quad, 1);
+  followQuad(frog.quad, 3);
+  valid = valid || quad.visited;
+  diagram.quads.forEach((quad) => {
+    quad.valid = true;
+    quad.visited = false;
+  });
+  return valid;
 }
 
 function cleanBoard() {
@@ -252,7 +317,7 @@ function drawQuad(quad, color) {
     quad.neighbours.reduce((acc, neighbour) => {
       return min(acc, dhmdist(neighbour.site, quad.site));
     }, 1000) * 0.89;
-  //tint(color);
+  if (!quad.valid) tint(color);
   image(
     quad.lilyPad,
     quad.site.x * Game.board.size.width,

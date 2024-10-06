@@ -31,7 +31,7 @@ function followQuad(quad, direction, color) {
     (nextQuad.neighbours.findIndex((neighbour) => neighbour === quad) + 2) % 4;
 
   if (nextQuad && !nextQuad.traversed) {
-    drawQuad(nextQuad, color);
+    if (color) drawQuad(nextQuad, color);
     nextQuad.traversed = true;
     followQuad(nextQuad, nextDirection, color);
   }
