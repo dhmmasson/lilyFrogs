@@ -137,10 +137,15 @@ function setup() {
   imageMode(CENTER);
   createCanvas(Game.board.size.width, Game.board.size.height).parent("#canvas");
   windowResized();
-  startGame();
+  //startGame();
 }
 
 function mouseClicked() {
+  if (getAudioContext().state !== "running") {
+    console.log("Starting Audio");
+    userStartAudio();
+    Game.music.play();
+  }
   let frog = getFrog();
   let quad = getQuad();
   if (frog && !frog.selected) {

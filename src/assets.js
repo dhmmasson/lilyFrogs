@@ -22,6 +22,9 @@ function preload() {
     .map((_, i) => {
       return loadImage(`./assets/fly${i + 1}.png`);
     });
+
+  soundFormats("mp3", "ogg");
+  Game.music = loadSound("assets/theme");
 }
 
 colors = {
