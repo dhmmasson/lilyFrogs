@@ -4,6 +4,9 @@ project:
     port: 6492
   resources: 
     - ./assets/*.png
+    - ./assets/*.js.map
+    - ./assets/*.mp3
+
 
 website:
   title: "LD56"
