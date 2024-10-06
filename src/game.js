@@ -70,7 +70,7 @@ function aiThink() {
       quad.occupied = true;
       checkPlacementDone();
       Game.currentPlayer = 0;
-
+      highlightValidPlacement();
       return true;
     }
     if (Game.action == Actions.select) {
@@ -150,6 +150,7 @@ function startGame(numberOfPlayers) {
   Game.currentPlayer = 0;
   setTimeout(() => {
     Game.action = Actions.place;
+    unvalidBoard();
     highlightValidPlacement();
   }, 300);
   Game.players = [
@@ -245,6 +246,7 @@ function highlightValidPlacement() {
 }
 
 function PlaceFrog() {
+  unvalidBoard();
   highlightValidPlacement();
 
   let quad = getQuad();
@@ -338,7 +340,7 @@ function PlayingFrog() {
   }
 }
 
-function mouseClicked() {
+function mousePressed() {
   if (Game.state !== GameStates.playing) return;
   if (Game.action == Actions.place) {
     PlaceFrog();
@@ -467,6 +469,16 @@ function drawQuad(quad, color) {
     quad.neighbours.reduce((acc, neighbour) => {
       return min(acc, dhmdist(neighbour.site, quad.site));
     }, 1000) * 0.89;
+
+  if (quad.valid) {
+    fill(Game.players[Game.currentPlayer].color);
+    ellipse(
+      quad.site.x * Game.board.size.width,
+      quad.site.y * Game.board.size.height,
+      radius * Game.board.size.width,
+      radius * Game.board.size.height
+    );
+  }
   if (!quad.valid) tint(color);
   image(
     quad.lilyPad,
