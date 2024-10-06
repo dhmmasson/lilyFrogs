@@ -6,6 +6,7 @@ project:
     - ./assets/*.png
     - ./assets/*.js.map
     - ./assets/*.mp3
+    - ./assets/*.wav
 
 
 website:

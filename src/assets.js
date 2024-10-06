@@ -23,8 +23,13 @@ function preload() {
       return loadImage(`./assets/fly${i + 1}.png`);
     });
 
-  soundFormats("mp3", "ogg");
+  soundFormats("mp3", "wav");
   Game.music = loadSound("assets/theme");
+  Game.whao = Array(4)
+    .fill()
+    .map((_, i) => {
+      return loadSound(`assets/whao${i + 1}.wav`);
+    });
 }
 
 colors = {

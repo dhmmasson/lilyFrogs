@@ -19,8 +19,8 @@ function highlightFrog(quad, color) {
     Game.assets.frog_halo,
     quad.site.x * Game.board.size.width,
     quad.site.y * Game.board.size.height - 16,
-    36,
-    36
+    34 + 4 * sin(frameCount * 0.1),
+    34 + 4 * sin(frameCount * 0.1)
   );
   noTint();
 }
@@ -28,11 +28,14 @@ function highlightFrog(quad, color) {
 function drawFrog(player, frog) {
   let quad = frog.quad;
   if (player == Game.players[Game.currentPlayer]) {
-    highlightFrog(quad, colors["Gamboge"]);
+    highlightFrog(quad, colors["Vanilla"]);
   }
-  if (frog.higlighted || frog.selected) {
-    highlightFrog(quad, player.color);
+  if (frog.higlighted) {
+    highlightFrog(quad, colors["Gamboge"]);
     frog.higlighted = false;
+  }
+  if (frog.selected) {
+    highlightFrog(quad, player.color);
   }
   image(
     player.frog,

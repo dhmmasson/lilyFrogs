@@ -148,6 +148,7 @@ function mouseClicked() {
   let frog = getFrog();
   let quad = getQuad();
   if (frog && !frog.selected) {
+    random(Game.whao).play();
     if (Game.currentFrog) Game.currentFrog.selected = false;
     Game.currentFrog = frog;
     frog.selected = true;
@@ -156,6 +157,7 @@ function mouseClicked() {
     Game.currentFrog = null;
   } else {
     if (Game.currentFrog) {
+      random(Game.whao).play();
       frog = Game.currentFrog;
       // Remove the quad under the frog
       frog.quad.removed = true;
