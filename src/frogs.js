@@ -7,8 +7,8 @@ function Frog(player, quad) {
 
 function drawFrogs() {
   Game.players.forEach((player) => {
-    player.frogs.forEach((frog) => {
-      drawFrog(player, frog);
+    player.frogs.forEach((frog, index) => {
+      drawFrog(player, frog, index);
     });
   });
 }
@@ -25,7 +25,14 @@ function highlightFrog(quad, color) {
   noTint();
 }
 
-function drawFrog(player, frog) {
+function drawFrog(player, frog, index) {
+  if (!frog.quad) {
+    // Draw the frog on the player's side (0 left, 1 right)
+    let x = player.side ? Game.board.size.width - 20 : 20;
+    let y = index * 40 + 20 + 32;
+    image(player.frog, x, y, 32, 32);
+    return;
+  }
   let quad = frog.quad;
   if (player == Game.players[Game.currentPlayer]) {
     highlightFrog(quad, colors["Vanilla"]);

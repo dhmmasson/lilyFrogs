@@ -13,8 +13,8 @@ const Levels = {
 /** MENUS */
 const mainMenuStruct = {
   buttons: [
-    { label: "Start 2 Players Game", action: () => startGame(2), handle: null },
     { label: "Start 1 Player Game", action: () => startGame(1), handle: null },
+    { label: "Start 2 Players Game", action: () => startGame(2), handle: null },
   ],
   title: "Main Menu",
   buttonSize: 200,
@@ -22,9 +22,10 @@ const mainMenuStruct = {
 };
 
 const Actions = {
-  place: "Place a frog",
+  place: "Place next frog",
   select: "Select a frog",
   move: "Pick a destination",
+  wait: "Loading",
 };
 
 const GameStates = {
@@ -50,7 +51,7 @@ const Game = {
   currentMenu: "",
   nextMenu: "main",
   players: [],
-  action: Actions.place,
+  action: Actions.wait,
   highscores: [],
 };
 
@@ -58,14 +59,18 @@ function aiThink() {
   if (Game.currentPlayer == 1) {
     if (Game.action == Actions.place) {
       let quad = random(
-        Game.board.diagram.quads.filter((quad) => !quad.occupied)
+        Game.board.diagram.quads.filter(
+          (quad) => !quad.removed && !quad.occupied && quad.points == 1
+        )
       );
       let frog = Game.players[Game.currentPlayer].frogs.find(
         (frog) => !frog.quad
       );
       frog.quad = quad;
       quad.occupied = true;
+      checkPlacementDone();
       Game.currentPlayer = 0;
+
       return true;
     }
     if (Game.action == Actions.select) {
@@ -96,6 +101,7 @@ function aiThink() {
       Game.whao[0].play();
       frog.quad = quad;
       Game.players[Game.currentPlayer].score += quad.points || 0;
+      Game.action = Actions.select;
       quad.occupied = true;
       Game.currentPlayer = 0;
       return true;
@@ -114,8 +120,9 @@ function startGame(numberOfPlayers) {
     Game.ai = false;
     clearInterval(Game.aiHandle);
   }
+  Game.music.play();
 
-  Game.board.sites = Array(7)
+  Game.board.sites = Array(20)
     .fill({ x: 0, y: 0 })
     .map((site, index) => {
       return {
@@ -130,40 +137,56 @@ function startGame(numberOfPlayers) {
     .forEach((e) => {
       e.removed = true;
     });
+  count = diagram.quads.filter((quad) => !quad.removed).length;
+  while (count > 56) {
+    quad = random(diagram.quads.filter((quad) => !quad.removed));
+    quad.removed = true;
+    count = diagram.quads.filter((quad) => !quad.removed).length;
+  }
+
   console.log(diagram);
   Game.state = GameStates.playing;
   Game.currentPlayer = 0;
-  Game.action = Actions.select;
+  setTimeout(() => {
+    Game.action = Actions.place;
+    highlightValidPlacement();
+  }, 300);
   Game.players = [
     {
       color: colors["Persian pink"],
       frog: Game.assets.frog_pink,
       frogs: [],
       score: 0,
+      side: 0,
     },
     {
       color: colors["Pale azure"],
       frog: Game.assets.frog_blue,
       frogs: [],
       score: 0,
+      side: 1,
     },
   ];
+
+  values = [
+    ...Array(6).fill(5),
+    ...Array(30).fill(1),
+    ...Array(10).fill(2),
+    ...Array(10).fill(3),
+  ];
+
   Game.players.forEach((player) => {
     player.frogs = Array(3)
       .fill(0)
       .map((e, index) => {
-        // Get a random not remove quad, not occupied by a frog
-        quad = random(
-          diagram.quads.filter((quad) => !quad.removed && !quad.occupied)
-        );
-        quad.occupied = true;
-        return new Frog(player, quad);
+        return new Frog(player, null);
       });
   });
   diagram.quads
     .filter((quad) => !quad.removed && !quad.occupied)
     .forEach((quad) => {
-      quad.points = random([1, 1, 1, 1, 1, 2, 2, 2, 3, 5]);
+      quad.points = random(values);
+      values.splice(values.indexOf(quad.points), 1);
     });
 }
 
@@ -211,13 +234,50 @@ function setup() {
   //startGame();
 }
 
-function mouseClicked() {
-  if (Game.state !== GameStates.playing) return;
+function highlightValidPlacement() {
+  unvalidBoard();
+  Game.board.diagram.quads
+    .filter((quad) => !quad.removed && !quad.occupied && quad.points == 1)
+    .forEach((quad) => {
+      quad.valid = true;
+    });
+}
+
+function PlaceFrog() {
+  highlightValidPlacement();
+
+  let quad = getQuad();
+  if (quad && quad.valid) {
+    random(Game.whao).play();
+    let player = Game.players[Game.currentPlayer];
+    let frog = player.frogs.find((frog) => !frog.quad);
+    frog.quad = quad;
+    quad.occupied = true;
+    Game.currentPlayer = (Game.currentPlayer + 1) % Game.players.length;
+    checkPlacementDone();
+  }
+}
+
+function checkPlacementDone() {
+  let remainingFrogs = Game.players.reduce((acc, player) => {
+    return (
+      acc +
+      player.frogs.reduce((acc, frog) => {
+        return acc + (frog.quad ? 0 : 1);
+      }, 0)
+    );
+  }, 0);
+  console.log(remainingFrogs);
+  if (remainingFrogs == 0) {
+    Game.action = Actions.select;
+  }
+}
+
+function PlayingFrog() {
   const diagram = Game.board.diagram;
   if (getAudioContext().state !== "running") {
     console.log("Starting Audio");
     userStartAudio();
-    Game.music.play();
   }
   let frog = getFrog();
   let quad = getQuad();
@@ -274,6 +334,16 @@ function mouseClicked() {
         }
       }
     }
+  }
+}
+
+function mouseClicked() {
+  if (Game.state !== GameStates.playing) return;
+  if (Game.action == Actions.place) {
+    PlaceFrog();
+  }
+  if (Game.action !== Actions.place) {
+    PlayingFrog();
   }
 }
 
