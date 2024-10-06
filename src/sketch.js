@@ -42,202 +42,86 @@ const Game = {
   nextMenu: "main",
 };
 
-/** UI */
-//Resize canvas to fill the div
-function windowResized() {
-  const size = select("#canvas").size();
-  // Square Board
-  let minSize = min(size.width, size.height);
-  Game.board.size.width = minSize;
-  Game.board.size.height = minSize;
-  resizeCanvas(minSize, minSize);
-  // Force Menu refresh
-  Game.currentMenu = "";
-}
-
-function touchMoved() {
-  // do some stuff
-  return false;
-}
-
-function initMenu(menu) {
-  // Display the main menu
-  gui = createGui();
-  // gui.setTitle(menu.title);
-  let y = 50;
-  menu.buttons.forEach((button) => {
-    button.handle = createButton(
-      button.label,
-      Game.board.size.width / 2 - menu.buttonSize / 2,
-      y,
-      menu.buttonSize
-    );
-    y += menu.buttonSize + menu.buttonSpacing;
-  });
-  return gui;
-}
-
-function checkButtons() {
-  Game.menus[Game.currentMenu].buttons.forEach((button) => {
-    if (button.handle.isPressed) {
-      button.action();
-    }
-  });
-}
-
-function displayMenu() {
-  //Only display the menu if the game is in the menu state
-  if (Game.state !== GameStates.menu) {
-    return false;
-  }
-  // Create the menu on menu change
-  if (Game.currentMenu !== Game.nextMenu) {
-    initMenu(Game.menus[Game.nextMenu]);
-    Game.currentMenu = Game.nextMenu;
-  }
-
-  background(220);
-  drawGui();
-
-  // Check if buttons are pressed
-  checkButtons();
-}
-
-dhmdist = (p1, p2) => dist(p1.x, p1.y, p2.x, p2.y);
-
-function computeCentroid(cell) {
-  cell.centroid = { x: 0, y: 0 };
-  cell.halfedges.forEach((halfedge) => {
-    const v = halfedge.getStartpoint();
-    cell.centroid.x += v.x;
-    cell.centroid.y += v.y;
-  });
-  cell.centroid.x /= cell.halfedges.length;
-  cell.centroid.y /= cell.halfedges.length;
-
-  return dhmdist(cell.centroid, cell.site);
-}
-function computeCentroids() {
-  return Game.board.diagram.cells.reduce(
-    (totalDistance, cell) => totalDistance + computeCentroid(cell),
-    0
-  );
-}
-function generateDiagram() {
-  let diagram = null;
-  diagram = relaxDiagram(null, 100);
-  diagram = subdivide(diagram);
-  return diagram;
-}
-
-function subdivide(diagram) {
-  quads = [];
-  const edges = [];
-  const vertices = [];
-  for (const cell of diagram.cells) {
-    vertices.push(cell.site);
-    let cellVertices = [];
-    let va, vb;
-    for (const halfedge of cell.halfedges) {
-      va = halfedge.getStartpoint();
-      vb = halfedge.getEndpoint();
-      let middle = new Voronoi.prototype.Vertex(
-        (va.x + vb.x) / 2,
-        (va.y + vb.y) / 2
-      );
-
-      cellVertices.push(va);
-      cellVertices.push(middle);
-
-      vertices.push(va);
-      vertices.push(middle);
-    }
-    // Add the last vertex // same as tht first
-    cellVertices.push(vb);
-    cellVertices.shift();
-    // duplicate the first middle
-    cellVertices.push(cellVertices[0]);
-
-    while (cellVertices.length > 1) {
-      let quad = {
-        vertex: [
-          cell.site, // center
-          cellVertices.shift(), //middle
-          cellVertices.shift(), //corner
-          cellVertices[0], // next middle (keep for next quad)
-        ],
-        cell,
-      };
-
-      quads.push(quad);
-    }
-  }
-  diagram.quads = quads;
-  return diagram;
-}
-
-function relaxDiagram(diagram, maxIterations) {
-  let temp = 10;
-  while (temp > 0.01 && maxIterations-- > 0) {
-    voronoi.recycle(Game.board.diagram);
-    diagram = Game.board.diagram = voronoi.compute(Game.board.sites, {
-      xl: 0,
-      xr: 1,
-      yt: 0,
-      yb: 1,
-    });
-    temp = computeCentroids();
-    Game.board.sites = diagram.cells.map((cell) => {
-      return cell.centroid;
-    });
-  }
-  return diagram;
-}
-
 /** */
 function startGame() {
   console.log("Start Game");
-  Game.board.sites = Array(50)
+  Game.board.sites = Array(14)
     .fill({ x: 0, y: 0 })
     .map((site, index) => {
       return {
-        x: constrain((noise(0, index) - 0.5) * 2 + 0.5, 0.1, 0.9),
-        y: constrain((noise(1, index) - 0.5) * 2 + 0.5, 0.1, 0.9),
+        x: constrain((noise(0, index) - 0.5) * 2 + 0.5, 0.001, 0.999),
+        y: constrain((noise(1, index) - 0.5) * 2 + 0.5, 0.001, 0.999),
       };
     });
 
   let diagram = generateDiagram();
+  diagram.quads
+    .filter((e) => e.neighbours.filter((e) => e).length !== 4)
+    .forEach((e) => {
+      e.removed = true;
+    });
   console.log(diagram);
   Game.state = GameStates.playing;
+  Game.currentPlayer = 0;
+  Game.players = [
+    {
+      color: colors["Persian pink"],
+      frog: Game.assets.frog_pink,
+      frogs: [
+        {
+          quad: diagram.quads[10],
+          direction: 0,
+        },
+      ],
+    },
+    {
+      color: colors["Pale azure"],
+      frog: Game.assets.frog_blue,
+      frogs: [
+        {
+          quad: diagram.quads[20],
+          direction: 2,
+        },
+      ],
+    },
+  ];
 }
 
-function drawDiagram() {
+function draw() {
+  background(colors["Midnight green"]);
+  displayMenu();
+  // Draw the mouse
+  // find the quad
   if (Game.board.diagram) {
-    stroke(0);
-    strokeWeight(1);
-    Game.board.diagram.cells.forEach((cell) => {
-      fill(200);
-      beginShape();
-      cell.halfedges.forEach((halfedge) => {
-        const v = halfedge.getStartpoint();
-        vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
-      });
-      endShape(CLOSE);
+    let quad = Game.board.diagram.quads.find((quad) => {
+      return isPointInQuad({ x: mouseX, y: mouseY }, quad);
     });
-
-    // Draw the quads
-    stroke(255, 0, 0);
-    strokeWeight(1);
-    noFill();
-
-    Game.board.diagram.quads.forEach((quad) => {
-      beginShape();
-      quad.vertex.forEach((v) => {
-        vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
-      });
-      endShape(CLOSE);
-    });
+    if (quad) {
+      drawQuad(quad, color(colors["Cosmic latte"]));
+      quad.traversed = true;
+      followQuad(quad, 0, color(colors["Persian pink"]));
+      followQuad(quad, 2, color(colors["Persian pink"]));
+      cleanBoard();
+      followQuad(quad, 1, color(colors["Pale azure"]));
+      followQuad(quad, 3, color(colors["Pale azure"]));
+      cleanBoard();
+      //Find the frog
+      let [frog] = Game.players[Game.currentPlayer].frogs.filter(
+        (frog) => frog.quad === quad
+      );
+      if (frog) {
+        frog.higlighted = true;
+      }
+      if (mouseIsPressed) {
+      }
+    }
+    drawGame();
+    // Draw Mouse
+    fill(0);
+    ellipse(mouseX, mouseY, 5, 5);
   }
+
+  // untraverse the quads
 }
 
 function drawGame() {
@@ -245,18 +129,108 @@ function drawGame() {
     return false;
   }
   drawDiagram();
+  drawFrogs();
 }
 
 function setup() {
   // Create canvas and put it in the canvas div to guess the size
+  imageMode(CENTER);
   createCanvas(Game.board.size.width, Game.board.size.height).parent("#canvas");
   windowResized();
-
-  startGame();
+  //startGame();
 }
 
-function draw() {
-  background(100);
-  displayMenu();
-  drawGame();
+function mouseClicked() {
+  let frog = getFrog();
+  let quad = getQuad();
+  if (frog && !frog.selected) {
+    if (Game.currentFrog) Game.currentFrog.selected = false;
+    Game.currentFrog = frog;
+    frog.selected = true;
+  } else if (frog && frog.selected) {
+    frog.selected = false;
+    Game.currentFrog = null;
+  } else {
+    if (Game.currentFrog) {
+      frog = Game.currentFrog;
+      // Remove the quad under the frog
+      frog.quad.removed = true;
+      // Move the Frog to the quad
+      frog.quad = quad;
+      Game.currentFrog = null;
+      frog.selected = false;
+      // Change the player
+      Game.currentPlayer = (Game.currentPlayer + 1) % Game.players.length;
+    }
+  }
+}
+
+function getQuad() {
+  return (quad = Game.board.diagram.quads.find((quad) => {
+    return isPointInQuad({ x: mouseX, y: mouseY }, quad);
+  }));
+}
+
+function getFrog() {
+  let quad = getQuad();
+  if (quad) {
+    return Game.players[Game.currentPlayer].frogs.find((frog) => {
+      return frog.quad === quad;
+    });
+  } else {
+    return null;
+  }
+}
+
+function cleanBoard() {
+  Game.board.diagram.quads.forEach((quad) => {
+    quad.traversed = false;
+  });
+}
+function drawConnection(quad, direction, color) {
+  if (quad.removed) {
+    return false;
+  }
+  fill("#61bd9e");
+  strokeWeight(2);
+  stroke(color);
+  quad.neighbours.forEach((neighbour) => {
+    if (neighbour && !neighbour.removed) {
+      stroke("#61bd9e");
+      strokeWeight(2);
+      line(
+        quad.site.x * Game.board.size.width,
+        quad.site.y * Game.board.size.height,
+        neighbour.site.x * Game.board.size.width,
+        neighbour.site.y * Game.board.size.height
+      );
+    }
+  });
+}
+function drawQuad(quad, color) {
+  if (quad.removed) {
+    return false;
+  }
+  // Slight highlight of the cell to help select
+  stroke(0, 0, 0, 5);
+  strokeWeight(1);
+  noFill();
+  beginShape();
+  quad.vertices.forEach((v) => {
+    vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
+  });
+  endShape(CLOSE);
+  let radius =
+    quad.neighbours.reduce((acc, neighbour) => {
+      return min(acc, dhmdist(neighbour.site, quad.site));
+    }, 1000) * 0.89;
+  tint(color);
+  image(
+    quad.lilyPad,
+    quad.site.x * Game.board.size.width,
+    quad.site.y * Game.board.size.height,
+    radius * Game.board.size.width,
+    radius * Game.board.size.height
+  );
+  noTint();
 }

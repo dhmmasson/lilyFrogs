@@ -12,5 +12,26 @@
     "title": "LD56",
     "section": "",
     "text": "subdive the voronoi diagram\nrelax the voronoi diagram\ngenerate a voronoi diagram\ngenerate 10 random points\nui: add a start game menu\nui: Add canvas and resize functionality\nstart game level structure\nadd a canvas\n\n\n\n\n\nmove the navigation to the side"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Fifty Six LilyPads!",
+    "section": "",
+    "text": "Take turns placing your frogs on any lilypad with a fly.\n\n\n\n\nClick to select a frog.\nClick a destination to move the frog. &gt; Frogs follow paths but can’t jump over each other. Lilypads are destroyed after a frog leaves. Collect 1 point per fly, 5 points for a lotus.\nNext player moves.\n\nThe game ends when no moves are left for either player."
+  },
+  {
+    "objectID": "index.html#placement-phase",
+    "href": "index.html#placement-phase",
+    "title": "Fifty Six LilyPads!",
+    "section": "",
+    "text": "Take turns placing your frogs on any lilypad with a fly."
+  },
+  {
+    "objectID": "index.html#movement-phase",
+    "href": "index.html#movement-phase",
+    "title": "Fifty Six LilyPads!",
+    "section": "",
+    "text": "Click to select a frog.\nClick a destination to move the frog. &gt; Frogs follow paths but can’t jump over each other. Lilypads are destroyed after a frog leaves. Collect 1 point per fly, 5 points for a lotus.\nNext player moves.\n\nThe game ends when no moves are left for either player."
   }
 ]
