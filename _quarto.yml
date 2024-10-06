@@ -1,27 +1,38 @@
 project:
   type: website
+  preview:
+    port: 6492
+  resources: 
+    - ./assets/*.png
+    - ./assets/*.js.map
+    - ./assets/*.mp3
+    - ./assets/*.wav
+
 
 website:
   title: "LD56"
   site-url: "https://dhmmasson.github.io/LD56"
-  sidebar:
-    style: docked
-    alignment: right
-    search: false
-    contents:
-      - text: Home
-        href:  "https://dhmmasson.github.io/"
-      - about.qmd
-    tools: 
-      - icon: github
-        href: https://github.com/dhmmasson
-  
+  # sidebar:
+  #   style: docked
+  #   alignment: right
+  #   search: false
+  #   contents:
+  #     - text: "Play"
+  #       href: index.qmd
+  #     - about.qmd
+  #     - text: "@dhmmasson"
+  #       href: "https://dhmmasson.github.io/"
+  #   tools:
+  #     - icon: github
+  #       href: https://github.com/dhmmasson
 
 format:
   html:
-    theme: cosmo
+    theme:
+      - sketchy
+      - assets/ld56-theme.scss
     css: styles.css
-    toc: true
-
-
-
+    toc: false
+    fontsize: 1.1em
+    linestretch: 1.7
+    page-layout: full

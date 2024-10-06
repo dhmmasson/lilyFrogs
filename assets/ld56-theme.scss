@@ -1,0 +1,28 @@
+/*-- scss:defaults --*/
+$Midnight_green: #005f73;
+$Dark_cyan: #0a9396;
+$Mint: #61bd9e;
+$Vanilla: #e9d8a6;
+$Gamboge: #e99700;
+$Cocoa_Brown: #de7002;
+$Tawny: #cb5f12;
+$Engineering_orange: #b92113;
+$Penn_red: #9d1b12;
+$Falu_red: #7a1815;
+$Celestial_Blue: #0f9ad2;
+$Pale_azure: #6cd4ff;
+$Cosmic_latte: #fff9eb;
+$Persian_pink: #fe7fd1;
+$Deep_pink: #ff1499;
+$Magenta_dye: #b80068;
+
+// scss-docs-start theme-color-variables
+$primary: $Midnight_green !default;
+$secondary: $Persian_pink !default;
+$success: $Mint !default;
+$info: $Pale_azure !default;
+$warning: $Cocoa_Brown !default;
+$danger: $Engineering_orange !default;
+$light: $Cosmic_latte !default;
+$dark: $Falu_red !default;
+// scss-docs-end theme-color-variables
