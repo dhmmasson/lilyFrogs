@@ -76,7 +76,7 @@ function aiThink() {
     if (Game.action == Actions.select) {
       let frog = random(
         Game.players[Game.currentPlayer].frogs
-          .filter((frog) => !frog.selected)
+          //.filter((frog) => !frog.selected)
           .filter((frog) => getValidMoves(frog).length > 0) // Only select frogs that can move
       );
       frog.selected = true;
@@ -88,7 +88,13 @@ function aiThink() {
     if (Game.action == Actions.move) {
       let frog = Game.currentFrog;
       let quads = getValidMoves(frog);
-
+      if (quads.length == 0) {
+        Game.players[Game.currentPlayer].done = true;
+        frog.selected = false;
+        Game.currentFrog = null;
+        Game.action = Actions.select;
+        return false;
+      }
       let quad = random(quads);
       quad =
         quads.reduce((acc, quad) => {
@@ -224,6 +230,22 @@ function drawGame() {
   drawFrogs();
 
   displayScore();
+  if (Game.action != Actions.place && Game.action != Actions.wait) {
+    Game.players.forEach((player) => {
+      player.done = isPlayerDone(player);
+    });
+    // If both players are done, end the game
+    if (Game.players.reduce((acc, player) => acc && player.done, true)) {
+      clearInterval(Game.aiHandle);
+      Game.highscores.push(Game.players[0].score);
+      Game.state = GameStates.menu;
+      Game.nextMenu = "main";
+      Game.action = Actions.wait;
+    }
+    if (Game.players[Game.currentPlayer].done) {
+      Game.currentPlayer = (Game.currentPlayer + 1) % Game.players.length;
+    }
+  }
 }
 
 function setup() {
@@ -273,6 +295,7 @@ function checkPlacementDone() {
   console.log(remainingFrogs);
   if (remainingFrogs == 0) {
     Game.action = Actions.select;
+    unvalidBoard();
   }
 }
 
@@ -322,19 +345,6 @@ function PlayingFrog() {
         Game.currentPlayer = (Game.currentPlayer + 1) % Game.players.length;
         Game.action = Actions.select;
         unvalidBoard();
-
-        Game.players.forEach((player) => {
-          player.done = isPlayerDone(player);
-        });
-        // If both players are done, end the game
-        if (Game.players.reduce((acc, player) => acc && player.done, true)) {
-          Game.higscores.push(Game.players[0].score);
-          Game.state = GameStates.menu;
-          Game.nextMenu = "main";
-        }
-        if (Game.players[Game.currentPlayer].done) {
-          Game.currentPlayer = (Game.currentPlayer + 1) % Game.players.length;
-        }
       }
     }
   }
