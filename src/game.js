@@ -12,7 +12,10 @@ const Levels = {
 
 /** MENUS */
 const mainMenuStruct = {
-  buttons: [{ label: "Start Game", action: startGame, handle: null }],
+  buttons: [
+    { label: "Start 2 Players Game", action: () => startGame(2), handle: null },
+    { label: "Start 1 Player Game", action: () => startGame(1), handle: null },
+  ],
   title: "Main Menu",
   buttonSize: 200,
   buttonSpacing: 10,
@@ -48,11 +51,70 @@ const Game = {
   nextMenu: "main",
   players: [],
   action: Actions.place,
+  highscores: [],
 };
 
+function aiThink() {
+  if (Game.currentPlayer == 1) {
+    if (Game.action == Actions.place) {
+      let quad = random(
+        Game.board.diagram.quads.filter((quad) => !quad.occupied)
+      );
+      let frog = Game.players[Game.currentPlayer].frogs.find(
+        (frog) => !frog.quad
+      );
+      frog.quad = quad;
+      quad.occupied = true;
+      Game.currentPlayer = 0;
+      return true;
+    }
+    if (Game.action == Actions.select) {
+      let frog = random(
+        Game.players[Game.currentPlayer].frogs
+          .filter((frog) => !frog.selected)
+          .filter((frog) => getValidMoves(frog).length > 0) // Only select frogs that can move
+      );
+      frog.selected = true;
+      Game.whao[0].play();
+      Game.currentFrog = frog;
+      Game.action = Actions.move;
+      return true;
+    }
+    if (Game.action == Actions.move) {
+      let frog = Game.currentFrog;
+      let quads = getValidMoves(frog);
+
+      let quad = random(quads);
+      quad =
+        quads.reduce((acc, quad) => {
+          if (quad.points > acc.points) {
+            return quad;
+          }
+          return acc;
+        }) || quad;
+      frog.quad.occupied = false;
+      Game.whao[0].play();
+      frog.quad = quad;
+      Game.players[Game.currentPlayer].score += quad.points || 0;
+      quad.occupied = true;
+      Game.currentPlayer = 0;
+      return true;
+    }
+  }
+  return false;
+}
+
 /** */
-function startGame() {
+function startGame(numberOfPlayers) {
   console.log("Start Game");
+  if (numberOfPlayers == 1) {
+    Game.ai = true;
+    Game.aiHandle = setInterval(aiThink, 1000);
+  } else {
+    Game.ai = false;
+    clearInterval(Game.aiHandle);
+  }
+
   Game.board.sites = Array(7)
     .fill({ x: 0, y: 0 })
     .map((site, index) => {
@@ -129,24 +191,6 @@ function draw() {
   }
 }
 
-function displayScore() {
-  textSize(16);
-  textAlign(LEFT, TOP);
-  fill(colors["Persian pink"]);
-  text(Game.players[0].score, 10, 10);
-  textAlign(RIGHT, TOP);
-  fill(colors["Pale azure"]);
-  text(Game.players[1].score, width - 10, 10);
-
-  fill(Game.players[Game.currentPlayer].color);
-  textAlign(CENTER, TOP);
-  rectMode(RADIUS);
-  fill(Game.players[Game.currentPlayer].color);
-  rect(width / 2, 20, 100, 10);
-  fill(0);
-  text("Player " + Game.currentPlayer + " " + Game.action, width / 2, 10);
-}
-
 function drawGame() {
   if (Game.state !== GameStates.playing) {
     return false;
@@ -159,9 +203,11 @@ function drawGame() {
 
 function setup() {
   // Create canvas and put it in the canvas div to guess the size
+  textFont("Cabin Sketch");
   imageMode(CENTER);
   createCanvas(Game.board.size.width, Game.board.size.height).parent("#canvas");
   windowResized();
+
   //startGame();
 }
 
@@ -201,10 +247,12 @@ function mouseClicked() {
         // Remove the quad under the frog
         frog.quad.removed = true;
         player = Game.players[Game.currentPlayer];
-        player.score += frog.quad.points || 0;
+
         // Move the Frog to the quad
         frog.quad = quad;
         quad.occupied = true;
+        player.score += frog.quad.points || 0;
+
         Game.currentFrog = null;
         frog.selected = false;
         // Change the player
@@ -217,6 +265,7 @@ function mouseClicked() {
         });
         // If both players are done, end the game
         if (Game.players.reduce((acc, player) => acc && player.done, true)) {
+          Game.higscores.push(Game.players[0].score);
           Game.state = GameStates.menu;
           Game.nextMenu = "main";
         }
@@ -356,36 +405,38 @@ function drawQuad(quad, color) {
     radius * Game.board.size.height
   );
   noTint();
-  if (quad.points == 5) {
-    // Draw a lotus
-    image(
-      Game.assets.lotus[0],
-      quad.site.x * Game.board.size.width,
-      quad.site.y * Game.board.size.height,
-      32,
-      32
-    );
-  }
-  // Draw the points for 1, 2, 3 point draw a fly
-  if (quad.points < 5) {
-    var x = quad.site.x * Game.board.size.width;
-    var y = quad.site.y * Game.board.size.height;
-    Array(quad.points)
-      .fill(0)
-      .forEach((e, index) => {
-        image(
-          Game.assets.fly[0],
-          x +
-            (noise(0, quad.id + index + frameCount / 100) - 0.5) *
-              radius *
-              Game.board.size.width,
-          y +
-            (noise(1, quad.id + index + frameCount / 100) - 0.5) *
-              radius *
-              Game.board.size.width,
-          24,
-          24
-        );
-      });
+  if (!quad.occupied) {
+    if (quad.points == 5) {
+      // Draw a lotus
+      image(
+        Game.assets.lotus[0],
+        quad.site.x * Game.board.size.width,
+        quad.site.y * Game.board.size.height,
+        32,
+        32
+      );
+    }
+    // Draw the points for 1, 2, 3 point draw a fly
+    if (quad.points < 5) {
+      var x = quad.site.x * Game.board.size.width;
+      var y = quad.site.y * Game.board.size.height;
+      Array(quad.points)
+        .fill(0)
+        .forEach((e, index) => {
+          image(
+            Game.assets.fly[0],
+            x +
+              (noise(0, quad.id + index + frameCount / 100) - 0.5) *
+                radius *
+                Game.board.size.width,
+            y +
+              (noise(1, quad.id + index + frameCount / 100) - 0.5) *
+                radius *
+                Game.board.size.width,
+            24,
+            24
+          );
+        });
+    }
   }
 }
