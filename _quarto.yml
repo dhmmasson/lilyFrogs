@@ -19,9 +19,14 @@ website:
 
 format:
   html:
-    theme: cosmo
+    theme:
+    - sketchy
+    - assets/ld56-theme.scss
     css: styles.css
-    toc: true
+    toc: false
 
+
+    fontsize: 1.1em
+    linestretch: 1.7
 
 

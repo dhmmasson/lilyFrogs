@@ -1,5 +1,5 @@
 ---
-title: "LD56"
+title: "Fifty Six Frogs"
 include-before-body:
   text: |
     <script src="libraries/rhill-voronoi-core.js" type="text/javascript"></script>
