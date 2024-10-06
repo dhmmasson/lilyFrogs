@@ -308,7 +308,7 @@ function subdivide(diagram) {
       quad.edges.forEach((edge) => {
         edge.quad.push(quad);
       });
-
+      quad.lilyPad = random(Game.assets.lilypads);
       quads.push(quad);
     }
   }
@@ -348,7 +348,7 @@ function relaxDiagram(diagram, maxIterations) {
 /** */
 function startGame() {
   console.log("Start Game");
-  Game.board.sites = Array(25)
+  Game.board.sites = Array(14)
     .fill({ x: 0, y: 0 })
     .map((site, index) => {
       return {
@@ -365,6 +365,29 @@ function startGame() {
     });
   console.log(diagram);
   Game.state = GameStates.playing;
+  Game.currentPlayer = 0;
+  Game.players = [
+    {
+      color: colors["Persian pink"],
+      frog: Game.assets.frog_pink,
+      frogs: [
+        {
+          quad: diagram.quads[10],
+          direction: 0,
+        },
+      ],
+    },
+    {
+      color: colors["Pale azure"],
+      frog: Game.assets.frog_blue,
+      frogs: [
+        {
+          quad: diagram.quads[20],
+          direction: 2,
+        },
+      ],
+    },
+  ];
 }
 
 function drawDiagram() {
@@ -387,10 +410,44 @@ function drawGame() {
     return false;
   }
   drawDiagram();
+  drawFrogs();
+}
+
+function drawFrogs() {
+  Game.players.forEach((player) => {
+    player.frogs.forEach((frog) => {
+      drawFrog(player, frog);
+    });
+  });
+}
+
+function drawFrog(player, frog) {
+  let quad = frog.quad;
+  if (frog.selected) {
+    frog.selected = false;
+    tint(player.color);
+    image(
+      Game.assets.frog_halo,
+      quad.site.x * Game.board.size.width,
+      quad.site.y * Game.board.size.height - 16,
+      36,
+      36
+    );
+    noTint();
+  }
+  image(
+    player.frog,
+    quad.site.x * Game.board.size.width,
+    quad.site.y * Game.board.size.height - 16,
+    32,
+    32
+  );
 }
 
 function setup() {
   // Create canvas and put it in the canvas div to guess the size
+  imageMode(CENTER);
+
   createCanvas(Game.board.size.width, Game.board.size.height).parent("#canvas");
   windowResized();
 
@@ -400,7 +457,6 @@ function setup() {
 function draw() {
   background(colors["Midnight green"]);
   displayMenu();
-  drawGame();
 
   // Draw the mouse
   fill(0);
@@ -419,11 +475,17 @@ function draw() {
       followQuad(quad, 1, color(colors["Pale azure"]));
       followQuad(quad, 3, color(colors["Pale azure"]));
       cleanBoard();
+      //Find the frog
+      let [frog] = Game.players[Game.currentPlayer].frogs.filter(
+        (frog) => frog.quad === quad
+      );
+      if (frog) frog.selected = true;
       // if mouse pressed remove the quad
       if (mouseIsPressed) {
         quad.removed = true;
       }
     }
+    drawGame();
 
     // Draw the connected quads
   }
@@ -472,10 +534,18 @@ function drawQuad(quad, color) {
   let radius =
     quad.neighbours.reduce((acc, neighbour) => {
       return min(acc, dhmdist(neighbour.site, quad.site));
-    }, 1000) * 0.618;
+    }, 1000) * 0.89;
   fill(color);
   stroke("#429e80");
-  ellipse(
+  // ellipse(
+  //   quad.site.x * Game.board.size.width,
+  //   quad.site.y * Game.board.size.height,
+  //   radius * Game.board.size.width,
+  //   radius * Game.board.size.height
+  // );
+  // Draw a lilypad
+  image(
+    quad.lilyPad,
     quad.site.x * Game.board.size.width,
     quad.site.y * Game.board.size.height,
     radius * Game.board.size.width,
@@ -496,4 +566,21 @@ function followQuad(quad, direction, color) {
     nextQuad.traversed = true;
     followQuad(nextQuad, nextDirection, color);
   }
+}
+
+function preload() {
+  Game.assets = {};
+  Game.assets.frog_blue = loadImage("./assets/frog-blue.png");
+  Game.assets.frog_pink = loadImage("./assets/frog-pink.png");
+  Game.assets.lilypads = Array(2)
+    .fill()
+    .map((_, i) => {
+      return loadImage(`./assets/lilypad${i + 1}.png`);
+    });
+  Game.assets.lotus = Array(4)
+    .fill()
+    .map((_, i) => {
+      return loadImage(`./assets/lotus${i + 1}.png`);
+    });
+  Game.assets.frog_halo = loadImage("./assets/frog-halo.png");
 }
