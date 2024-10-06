@@ -48,17 +48,7 @@ function displayMenu() {
   if (Game.state !== GameStates.menu) {
     return false;
   }
-  try {
-    textAlign(CENTER, TOP);
-    fill(colors["Vanilla"]);
-    text(
-      "Higscore " + Game.highscores.reduce(max, 0),
-      Game.board.size.width / 2,
-      10
-    );
-  } catch (error) {
-    console.log(error);
-  }
+
   // Create the menu on menu change
   if (Game.currentMenu !== Game.nextMenu) {
     initMenu(Game.menus[Game.nextMenu]);
@@ -70,6 +60,14 @@ function displayMenu() {
 
   // Check if buttons are pressed
   checkButtons();
+
+  textAlign(CENTER, TOP);
+  fill(colors["Vanilla"]);
+  text(
+    "Higscore " + Game.highscores.reduce(max, 0),
+    Game.board.size.width / 2,
+    10
+  );
 }
 
 function displayScore() {
