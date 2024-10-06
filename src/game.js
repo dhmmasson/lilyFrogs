@@ -98,6 +98,7 @@ function aiThink() {
           return acc;
         }) || quad;
       frog.quad.occupied = false;
+      frog.quad.removed = true;
       Game.whao[0].play();
       frog.quad = quad;
       Game.players[Game.currentPlayer].score += quad.points || 0;
