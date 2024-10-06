@@ -273,6 +273,7 @@ function checkPlacementDone() {
   console.log(remainingFrogs);
   if (remainingFrogs == 0) {
     Game.action = Actions.select;
+    unvalidBoard();
   }
 }
 
