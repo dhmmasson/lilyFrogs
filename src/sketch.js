@@ -9,6 +9,13 @@ colors = {
   "Engineering orange": "#b92113",
   "Penn red": "#9d1b12",
   "Falu red": "#7a1815",
+  // "Midnight green": "#1d5267",
+  "Celestial Blue": "#0f9ad2",
+  "Pale azure": "#6cd4ff",
+  "Cosmic latte": "#fff9eb",
+  "Persian pink": "#fe7fd1",
+  "Deep pink": "#ff1499",
+  "Magenta dye": "#b80068",
 };
 
 /** Levels */
@@ -109,7 +116,7 @@ function displayMenu() {
     Game.currentMenu = Game.nextMenu;
   }
 
-  background(colors["Dark cyan"]);
+  background(colors["Midnight green"]);
   drawGui();
 
   // Check if buttons are pressed
@@ -322,7 +329,7 @@ function subdivide(diagram) {
 
 function relaxDiagram(diagram, maxIterations) {
   let temp = 10;
-  while (temp > 0.01 && maxIterations-- > 0) {
+  while (temp > 0.1 && maxIterations-- > 0) {
     voronoi.recycle(Game.board.diagram);
     diagram = Game.board.diagram = voronoi.compute(Game.board.sites, {
       xl: 0,
@@ -341,16 +348,21 @@ function relaxDiagram(diagram, maxIterations) {
 /** */
 function startGame() {
   console.log("Start Game");
-  Game.board.sites = Array(50)
+  Game.board.sites = Array(25)
     .fill({ x: 0, y: 0 })
     .map((site, index) => {
       return {
-        x: constrain((noise(0, index) - 0.5) * 2 + 0.5, 0.1, 0.9),
-        y: constrain((noise(1, index) - 0.5) * 2 + 0.5, 0.1, 0.9),
+        x: constrain((noise(0, index) - 0.5) * 2 + 0.5, 0.001, 0.999),
+        y: constrain((noise(1, index) - 0.5) * 2 + 0.5, 0.001, 0.999),
       };
     });
 
   let diagram = generateDiagram();
+  diagram.quads
+    .filter((e) => e.neighbours.filter((e) => e).length !== 4)
+    .forEach((e) => {
+      e.removed = true;
+    });
   console.log(diagram);
   Game.state = GameStates.playing;
 }
@@ -362,11 +374,10 @@ function drawDiagram() {
     strokeWeight(1);
     noFill();
     Game.board.diagram.quads.forEach((quad) => {
-      beginShape();
-      quad.vertices.forEach((v) => {
-        vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
-      });
-      endShape(CLOSE);
+      drawConnection(quad, 0, color(colors["Celestial Blue"]));
+    });
+    Game.board.diagram.quads.forEach((quad) => {
+      drawQuad(quad, color(colors["Mint"]));
     });
   }
 }
@@ -387,7 +398,7 @@ function setup() {
 }
 
 function draw() {
-  background(colors["Dark cyan"]);
+  background(colors["Midnight green"]);
   displayMenu();
   drawGame();
 
@@ -400,51 +411,81 @@ function draw() {
       return isPointInQuad({ x: mouseX, y: mouseY }, quad);
     });
     if (quad) {
-      drawQuad(quad, color(colors.Vanilla));
+      drawQuad(quad, color(colors["Cosmic latte"]));
       quad.traversed = true;
-      followQuad(quad, 0, color(colors.Gamboge));
-      followQuad(quad, 2, color(colors.Gamboge));
-
-      followQuad(quad, 1, color(colors.Mint));
-      followQuad(quad, 3, color(colors.Mint));
+      followQuad(quad, 0, color(colors["Persian pink"]));
+      followQuad(quad, 2, color(colors["Persian pink"]));
+      cleanBoard();
+      followQuad(quad, 1, color(colors["Pale azure"]));
+      followQuad(quad, 3, color(colors["Pale azure"]));
+      cleanBoard();
+      // if mouse pressed remove the quad
+      if (mouseIsPressed) {
+        quad.removed = true;
+      }
     }
 
     // Draw the connected quads
   }
 
-  // draw the voronoi
-  stroke(colors["Midnight green"]);
-  strokeWeight(2);
-  noFill();
-  Game.board.diagram.cells.forEach((cell) => {
-    beginShape();
-    cell.halfedges.forEach((halfedge) => {
-      let v = halfedge.getStartpoint();
-      vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
-    });
-    endShape(CLOSE);
-  });
-
   // untraverse the quads
+}
+
+function cleanBoard() {
   Game.board.diagram.quads.forEach((quad) => {
     quad.traversed = false;
   });
 }
-
-function drawQuad(quad, color) {
-  stroke(0);
-  strokeWeight(1);
-  fill(color);
-  beginShape();
-  quad.vertices.forEach((v) => {
-    vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
+function drawConnection(quad, direction, color) {
+  if (quad.removed) {
+    return false;
+  }
+  fill("#61bd9e");
+  strokeWeight(2);
+  stroke(color);
+  quad.neighbours.forEach((neighbour) => {
+    if (neighbour && !neighbour.removed) {
+      stroke("#61bd9e");
+      strokeWeight(2);
+      line(
+        quad.site.x * Game.board.size.width,
+        quad.site.y * Game.board.size.height,
+        neighbour.site.x * Game.board.size.width,
+        neighbour.site.y * Game.board.size.height
+      );
+    }
   });
-  endShape(CLOSE);
+}
+function drawQuad(quad, color) {
+  if (quad.removed) {
+    return false;
+  }
+  // stroke(0);
+  strokeWeight(1);
+
+  noFill();
+  // beginShape();
+  // quad.vertices.forEach((v) => {
+  //   vertex(v.x * Game.board.size.width, v.y * Game.board.size.height);
+  // });
+  // endShape(CLOSE);
+  let radius =
+    quad.neighbours.reduce((acc, neighbour) => {
+      return min(acc, dhmdist(neighbour.site, quad.site));
+    }, 1000) * 0.618;
+  fill(color);
+  stroke("#429e80");
+  ellipse(
+    quad.site.x * Game.board.size.width,
+    quad.site.y * Game.board.size.height,
+    radius * Game.board.size.width,
+    radius * Game.board.size.height
+  );
 }
 
 function followQuad(quad, direction, color) {
   let nextQuad = quad.neighbours[direction];
-  if (!nextQuad) {
+  if (!nextQuad || nextQuad.removed) {
     return false;
   }
   let nextDirection = //find in the nextQuad where we come from
