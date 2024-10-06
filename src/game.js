@@ -69,11 +69,13 @@ function startGame() {
       color: colors["Persian pink"],
       frog: Game.assets.frog_pink,
       frogs: [],
+      score: 0,
     },
     {
       color: colors["Pale azure"],
       frog: Game.assets.frog_blue,
       frogs: [],
+      score: 0,
     },
   ];
   Game.players.forEach((player) => {
@@ -88,6 +90,11 @@ function startGame() {
         return new Frog(player, quad);
       });
   });
+  diagram.quads
+    .filter((quad) => !quad.removed && !quad.occupied)
+    .forEach((quad) => {
+      quad.points = random([1, 1, 1, 1, 1, 2, 2, 2, 3, 5]);
+    });
 }
 
 function draw() {
@@ -100,18 +107,7 @@ function draw() {
       return isPointInQuad({ x: mouseX, y: mouseY }, quad);
     });
     if (quad) {
-      drawQuad(quad, color(colors["Cosmic latte"]));
-      quad.traversed = true;
-      followQuad(quad, 0, color(colors["Persian pink"]));
-      followQuad(quad, 2, color(colors["Persian pink"]));
-      cleanBoard();
-      followQuad(quad, 1, color(colors["Pale azure"]));
-      followQuad(quad, 3, color(colors["Pale azure"]));
-      cleanBoard();
-      //Find the frog
-      let [frog] = Game.players[Game.currentPlayer].frogs.filter(
-        (frog) => frog.quad === quad
-      );
+      frog = getFrog();
       if (frog) {
         frog.higlighted = true;
       }
@@ -232,7 +228,7 @@ function drawQuad(quad, color) {
     quad.neighbours.reduce((acc, neighbour) => {
       return min(acc, dhmdist(neighbour.site, quad.site));
     }, 1000) * 0.89;
-  tint(color);
+  //tint(color);
   image(
     quad.lilyPad,
     quad.site.x * Game.board.size.width,
@@ -241,4 +237,36 @@ function drawQuad(quad, color) {
     radius * Game.board.size.height
   );
   noTint();
+  if (quad.points == 5) {
+    // Draw a lotus
+    image(
+      Game.assets.lotus[0],
+      quad.site.x * Game.board.size.width,
+      quad.site.y * Game.board.size.height,
+      32,
+      32
+    );
+  }
+  // Draw the points for 1, 2, 3 point draw a fly
+  if (quad.points < 5) {
+    var x = quad.site.x * Game.board.size.width;
+    var y = quad.site.y * Game.board.size.height;
+    Array(quad.points)
+      .fill(0)
+      .forEach((e, index) => {
+        image(
+          Game.assets.fly[0],
+          x +
+            (noise(0, quad.id + index + frameCount / 100) - 0.5) *
+              radius *
+              Game.board.size.width,
+          y +
+            (noise(1, quad.id + index + frameCount / 100) - 0.5) *
+              radius *
+              Game.board.size.width,
+          24,
+          24
+        );
+      });
+  }
 }
