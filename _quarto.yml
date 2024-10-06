@@ -1,5 +1,9 @@
 project:
   type: website
+  preview:
+    port: 6492
+  resources: 
+    - ./assets/*.png
 
 website:
   title: "LD56"
@@ -9,24 +13,21 @@ website:
     alignment: right
     search: false
     contents:
-      - text: Home
-        href:  "https://dhmmasson.github.io/"
+      - text: "Play"
+        href: index.qmd
       - about.qmd
-    tools: 
+      - text: "@dhmmasson"
+        href: "https://dhmmasson.github.io/"
+    tools:
       - icon: github
         href: https://github.com/dhmmasson
-  
 
 format:
   html:
     theme:
-    - sketchy
-    - assets/ld56-theme.scss
+      - sketchy
+      - assets/ld56-theme.scss
     css: styles.css
     toc: false
-
-
     fontsize: 1.1em
     linestretch: 1.7
-
-
