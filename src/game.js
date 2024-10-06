@@ -18,6 +18,12 @@ const mainMenuStruct = {
   buttonSpacing: 10,
 };
 
+const Actions = {
+  place: "Place a frog",
+  select: "Select a frog",
+  move: "Pick a destination",
+};
+
 const GameStates = {
   menu: "menu",
   playing: "playing",
@@ -41,12 +47,13 @@ const Game = {
   currentMenu: "",
   nextMenu: "main",
   players: [],
+  action: Actions.place,
 };
 
 /** */
 function startGame() {
   console.log("Start Game");
-  Game.board.sites = Array(14)
+  Game.board.sites = Array(7)
     .fill({ x: 0, y: 0 })
     .map((site, index) => {
       return {
@@ -64,6 +71,7 @@ function startGame() {
   console.log(diagram);
   Game.state = GameStates.playing;
   Game.currentPlayer = 0;
+  Game.action = Actions.select;
   Game.players = [
     {
       color: colors["Persian pink"],
@@ -121,18 +129,7 @@ function draw() {
   }
 }
 
-function drawGame() {
-  if (Game.state !== GameStates.playing) {
-    return false;
-  }
-  drawDiagram();
-  drawFrogs();
-
-  // untraverse the quads
-  // Draw the score for each player in their colors at the top of the screen
-  // and a panel fo the current playing player
-  // Score:Text CurrentPlayer:rect with colorful background Score:Text
-
+function displayScore() {
   textSize(16);
   textAlign(LEFT, TOP);
   fill(colors["Persian pink"]);
@@ -144,9 +141,20 @@ function drawGame() {
   fill(Game.players[Game.currentPlayer].color);
   textAlign(CENTER, TOP);
   rectMode(RADIUS);
-  rect(Game.width / 2, 20, 100, 10);
+  fill(Game.players[Game.currentPlayer].color);
+  rect(width / 2, 20, 100, 10);
   fill(0);
-  text("Player " + Game.currentPlayer, Game.width / 2, 10);
+  text("Player " + Game.currentPlayer + " " + Game.action, width / 2, 10);
+}
+
+function drawGame() {
+  if (Game.state !== GameStates.playing) {
+    return false;
+  }
+  drawDiagram();
+  drawFrogs();
+
+  displayScore();
 }
 
 function setup() {
@@ -174,18 +182,16 @@ function mouseClicked() {
     frog.selected = true;
     //Valid moves
     let quads = getValidMoves(frog);
-    diagram.quads.forEach((quad) => {
-      quad.valid = false;
-    });
+    unvalidBoard();
     quads.forEach((quad) => {
       quad.valid = true;
     });
+    Game.action = Actions.move;
   } else if (frog && frog.selected) {
     frog.selected = false;
     Game.currentFrog = null;
-    diagram.quads.forEach((quad) => {
-      quad.valid = false;
-    });
+    unvalidBoard();
+    Game.action = Actions.select;
   } else {
     if (Game.currentFrog) {
       let quads = getValidMoves(Game.currentFrog);
@@ -198,16 +204,34 @@ function mouseClicked() {
         player.score += frog.quad.points || 0;
         // Move the Frog to the quad
         frog.quad = quad;
+        quad.occupied = true;
         Game.currentFrog = null;
         frog.selected = false;
         // Change the player
         Game.currentPlayer = (Game.currentPlayer + 1) % Game.players.length;
-        diagram.quads.forEach((quad) => {
-          quad.valid = false;
+        Game.action = Actions.select;
+        unvalidBoard();
+
+        Game.players.forEach((player) => {
+          player.done = isPlayerDone(player);
         });
+        // If both players are done, end the game
+        if (Game.players.reduce((acc, player) => acc && player.done, true)) {
+          Game.state = GameStates.menu;
+          Game.nextMenu = "main";
+        }
+        if (Game.players[Game.currentPlayer].done) {
+          Game.currentPlayer = (Game.currentPlayer + 1) % Game.players.length;
+        }
       }
     }
   }
+}
+
+function unvalidBoard() {
+  Game.board.diagram.quads.forEach((quad) => {
+    quad.valid = false;
+  });
 }
 
 function getQuad() {
@@ -273,6 +297,12 @@ function isValidMove(frog, quad) {
     quad.visited = false;
   });
   return valid;
+}
+
+function isPlayerDone(player) {
+  return !player.frogs.reduce((acc, frog) => {
+    return acc || getValidMoves(frog).length > 0;
+  }, false);
 }
 
 function cleanBoard() {
