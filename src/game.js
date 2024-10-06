@@ -119,8 +119,6 @@ function draw() {
     fill(0);
     ellipse(mouseX, mouseY, 5, 5);
   }
-
-  // untraverse the quads
 }
 
 function drawGame() {
@@ -129,6 +127,26 @@ function drawGame() {
   }
   drawDiagram();
   drawFrogs();
+
+  // untraverse the quads
+  // Draw the score for each player in their colors at the top of the screen
+  // and a panel fo the current playing player
+  // Score:Text CurrentPlayer:rect with colorful background Score:Text
+
+  textSize(16);
+  textAlign(LEFT, TOP);
+  fill(colors["Persian pink"]);
+  text(Game.players[0].score, 10, 10);
+  textAlign(RIGHT, TOP);
+  fill(colors["Pale azure"]);
+  text(Game.players[1].score, width - 10, 10);
+
+  fill(Game.players[Game.currentPlayer].color);
+  textAlign(CENTER, TOP);
+  rectMode(RADIUS);
+  rect(Game.width / 2, 30, 100, 20);
+  fill(0);
+  text("Player " + Game.currentPlayer, Game.width / 2, 30);
 }
 
 function setup() {
@@ -140,6 +158,8 @@ function setup() {
 }
 
 function mouseClicked() {
+  if (Game.state !== GameStates.playing) return;
+
   if (getAudioContext().state !== "running") {
     console.log("Starting Audio");
     userStartAudio();
@@ -161,6 +181,8 @@ function mouseClicked() {
       frog = Game.currentFrog;
       // Remove the quad under the frog
       frog.quad.removed = true;
+      player = Game.players[Game.currentPlayer];
+      player.score += frog.quad.points || 0;
       // Move the Frog to the quad
       frog.quad = quad;
       Game.currentFrog = null;
