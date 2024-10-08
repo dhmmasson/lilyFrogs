@@ -1,5 +1,12 @@
 [
   {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "ReuseMIT"
+  },
+  {
     "objectID": "CHANGELOG.html",
     "href": "CHANGELOG.html",
     "title": "Fifty-Six Lily Pads",
@@ -33,5 +40,19 @@
     "title": "Fifty Six LilyPads!",
     "section": "",
     "text": "Click to select a frog.\nClick a destination to move the frog. &gt; Frogs follow paths but can’t jump over each other. Lilypads are destroyed after a frog leaves. Collect 1 point per fly, 5 points for a lotus.\nNext player moves.\n\nThe game ends when no moves are left for either player."
+  },
+  {
+    "objectID": "index.html#fifty-six-lilypads",
+    "href": "index.html#fifty-six-lilypads",
+    "title": "Fifty Six LilyPads!",
+    "section": "Fifty Six LilyPads!",
+    "text": "Fifty Six LilyPads!\n\nRate my entry : https://ldjam.com/events/ludum-dare/56/fifty-six-frogs\nCheck the source code for this game on GitHub: https://github.com/dhmmasson/lilyFrogs\nLeave a Star if you like it! Star"
+  },
+  {
+    "objectID": "index.html#ratings",
+    "href": "index.html#ratings",
+    "title": "Fifty Six LilyPads!",
+    "section": "Ratings",
+    "text": "Ratings\n\n\n\nRatings"
   }
 ]

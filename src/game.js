@@ -252,8 +252,18 @@ function setup() {
   // Create canvas and put it in the canvas div to guess the size
   textFont("Cabin Sketch");
   imageMode(CENTER);
-  createCanvas(Game.board.size.width, Game.board.size.height).parent("#canvas");
+  c = createCanvas(Game.board.size.width, Game.board.size.height).parent(
+    "#canvas"
+  );
   windowResized();
+
+  const scroll = () => {
+    window.scrollBy({
+      top: c.elt.getBoundingClientRect().top - 10,
+      behavior: "smooth",
+    });
+  };
+  setTimeout(scroll, 100);
 
   //startGame();
 }
