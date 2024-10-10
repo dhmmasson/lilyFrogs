@@ -9,14 +9,14 @@ My entry for ludum dare 56
 
 # Ratings
 
-![Ratings](https://badges.jaxs.onl/56/untitled/badge.svg)
+![Ratings](https://badges.jaxs.onl/56/fifty-six-frogs/badge.svg)
 
 # Cite this repository
 
 If you want to cite this software, please cite use the following :
 
 ```APA
-Masson, D. (2024). Untitled (Version v1.0.0.) [Computer software]. Ludum Dare 56. https://github.com/dhmmasson/LD56
+Masson, D. (2024). Fifty Six Lilypads! (Version v1.0.0) [Computer software]. Ludum Dare 56. https://github.com/dhmmasson/LD56
 ```
 
 ```bibtex
@@ -24,7 +24,7 @@ Masson, D. (2024). Untitled (Version v1.0.0.) [Computer software]. Ludum Dare 56
 author = {Masson, Dimitri},
 license = {MIT},
 month = oct,
-title = {{Untitled}},
+title = {{Fifty Six Lilypads!}},
 url = {https://github.com/dhmmasson/lilyFrogs},
 doi = {10.5281/zenodo.13896183},
 version = {v1.0.0},

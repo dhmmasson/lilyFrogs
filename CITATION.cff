@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: LD56
+title: Fifty Six Lilypads!
 message: >-
   If you use this software, please cite it using the
   metadata from this file.
@@ -12,14 +12,18 @@ authors:
 identifiers:
   - type: doi
     value: 10.5281/zenodo.13896183
-    description: 'doi of this version'
+    description: 'DOI of the Compo Release'
   - type: doi
     value: 10.5281/zenodo.13893396
-    description: 'doi of all versions'
+    description: 'DOI of all versions'
 repository-code: 'https://github.com/dhmmasson/LD56'
 url: 'https://dhmmasson.github.io/LD56/'
 abstract: >-
-  My Entry for Ludum Dare 56. A game made in 48 hours.
+  56 Lilypads is a turn-based game where frogs 
+  leap between lilypads to catch flies and 
+  lotuses, but each lilypad disappears once left
+  behind! Compete for the highest score in this 
+  strategic battle before movement options run out
 keywords:
   - Ludum Dare
   - Game
