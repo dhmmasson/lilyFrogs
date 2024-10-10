@@ -2,7 +2,7 @@
 
 ![Ludum Dare](https://img.shields.io/badge/LudumDare-56-f79122?labelColor=ee5533&link=https%3A%2F%2Fldjam.com%2Fevents%2Fludum-dare%2F56)
 ![p5js](https://img.shields.io/badge/p5.js-v1.9.4-ED225D?logo=p5.js&logoColor=FFFFFF)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13893396.svg)](https://doi.org/10.5281/zenodo.13893396)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13896183.svg)](https://doi.org/10.5281/zenodo.13896183)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 My entry for ludum dare 56
@@ -16,7 +16,7 @@ My entry for ludum dare 56
 If you want to cite this software, please cite use the following :
 
 ```APA
-Masson, D. (2024). Untitled (Version v10.0.) [Computer software]. Ludum Dare 56. https://github.com/dhmmasson/LD56
+Masson, D. (2024). Untitled (Version v1.0.0.) [Computer software]. Ludum Dare 56. https://github.com/dhmmasson/LD56
 ```
 
 ```bibtex
@@ -25,8 +25,9 @@ author = {Masson, Dimitri},
 license = {MIT},
 month = oct,
 title = {{Untitled}},
-url = {https://github.com/dhmmasson/LD56},
-version = {v0.0.1},
+url = {https://github.com/dhmmasson/lilyFrogs},
+doi = {10.5281/zenodo.13896183},
+version = {v1.0.0},
 year = {2024}
 }
 ```

@@ -1,6 +1,7 @@
 ---
 title: "Fifty Six LilyPads!"
 subtitle: "Made for Ludum Dare 56"  
+doi: "10.5281/zenodo.13893396"
 abstract: "A game of strategy and tactics for two players. Each player controls a team of frogs that must move across a pond to catch flies and reach the lotus flower."
 author: 
   - name: 
@@ -24,6 +25,7 @@ citation:
   type: "software"
   container-title: "LudumDare 56"
   issued: "2024-10-06"
+  version: "1.0.0"
 date: "2024-10-06"
 title-block-categories: true
 
