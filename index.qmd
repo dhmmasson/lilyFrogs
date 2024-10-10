@@ -1,5 +1,13 @@
 ---
 title: "Fifty Six LilyPads!"
+subtitle: "Made for Ludum Dare 56"  
+abstract: "A game of strategy and tactics for two players. Each player controls a team of frogs that must move across a pond to catch flies and reach the lotus flower."
+author: 
+  - name: 
+      given: "Dimitri"
+      family: "Masson"
+    orcid: "0000-0002-7072-3146" 
+    email: "dhm.masson@gmail.com" 
 include-before-body:
   text: |
     <script src="libraries/rhill-voronoi-core.js" type="text/javascript"></script>
@@ -11,6 +19,15 @@ include-before-body:
     <script src="src/diagram.js"></script>
     <script src="src/frogs.js"></script>
     <script src="src/game.js"></script>
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+citation:
+  type: "software"
+  container-title: "LudumDare 56"
+  issued: "2024-10-06"
+date: "2024-10-06"
+title-block-categories: true
+
+
 ---
 ::: {.grid}
 
@@ -37,3 +54,18 @@ The game ends when no moves are left for either player.
 :::
 
 :::
+
+# Ludum Dare 56
+
+This game was made for Ludum Dare 56, a game jam where participants have 48 hours to create a game from scratch based on a theme. The theme for this jam was "Tiny Creatures".
+
+## Fifty Six LilyPads!
+
+ - Rate my entry : [https://ldjam.com/events/ludum-dare/56/fifty-six-frogs](https://ldjam.com/events/ludum-dare/56/fifty-six-frogs)
+- Check the source code for this game on GitHub: [https://github.com/dhmmasson/lilyFrogs](https://github.com/dhmmasson/lilyFrogs)
+- Leave a Star if you like it! [Star](https://github.com/dhmmasson/lilyFrogs){
+.github-button data-color-scheme="no-preference: light; light: light; dark: dark;" data-icon="octicon-star" data-size="small" data-show-count="true" aria-label="Star dhmmasson/lilyFrogs on GitHub"}
+
+## Ratings
+
+![Ratings](https://badges.jaxs.onl/56/fifty-six-frogs/badge.svg)

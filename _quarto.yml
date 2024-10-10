@@ -11,20 +11,22 @@ project:
 
 website:
   title: "Fifty-Six Lily Pads"
-  site-url: "https://dhmmasson.github.io/LD56"
-  # sidebar:
-  #   style: docked
-  #   alignment: right
-  #   search: false
-  #   contents:
-  #     - text: "Play"
-  #       href: index.qmd
-  #     - about.qmd
-  #     - text: "@dhmmasson"
-  #       href: "https://dhmmasson.github.io/"
-  #   tools:
-  #     - icon: github
-  #       href: https://github.com/dhmmasson
+  site-url: "https://dhmmasson.github.io/lilyFrogs/"
+  favicon: "assets/frog-pink.png"
+  open-graph: 
+    locale: "en_US"    
+  description: "My Entry for Ludum Dare 56. A game made in 48 hours."
+  
+  twitter-card: 
+    card-style: "summary_large_image"
+    creator: "@dhmmasson"
+  page-footer: 
+    left: 
+      - text: "Ludum Dare 56 (2024) - Dimitri Masson - MIT License"
+    right:
+      - text: "Star the project on GitHub"
+      - icon: github
+        href: https://github.com/dhmmasson/lilyFrogs
 
 format:
   html:
@@ -36,3 +38,16 @@ format:
     fontsize: 1.1em
     linestretch: 1.7
     page-layout: full
+    email-obfuscation: javascript
+    appendix-cite-as: display
+    title-block-style: manuscript
+    image: "assets/coverArt.png"
+    image-width: "640px"
+    image-height: "512px"
+    license: "MIT"
+    include-in-header: 
+      text: |
+        <meta property="og:url" content="https://dhmmasson.github.io/lilyFrogs/">
+        <meta property="og:type" content="website">
+        <meta property="og:logo" content="assets/frog-pink.png">
+
