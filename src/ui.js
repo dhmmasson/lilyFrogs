@@ -64,7 +64,7 @@ function displayMenu() {
   textAlign(CENTER, TOP);
   fill(colors["Vanilla"]);
   text(
-    "Higscore " + Game.highscores.reduce(max, 0),
+    "Higscore " + Game.highscores.reduce((a, e) => max(a, e), 0),
     Game.board.size.width / 2,
     10
   );
